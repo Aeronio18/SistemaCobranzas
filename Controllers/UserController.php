@@ -16,14 +16,16 @@ if (isset($_POST['login'])) {
         $_SESSION['username'] = $row['username'];
         $_SESSION['role'] = $row['role'];
         if ($row['role'] == 'admin') {
-            header("Location: /sandbox/admin_dashboard");
+            header("Location: /admin_dashboard.php");
         } elseif ($row['role'] == 'cobrador') {
-            header("Location: /sandbox/cobrador_dashboard");
+            header("Location: /cobrador_dashboard.php");
         } else {
-            header("Location: /sandbox/cliente_dashboard");
+            header("Location: /cliente_dashboard.php");
         }
     } else {
         echo "Usuario o contraseña incorrecta";
     }
+} else {
+    echo "Formulario no enviado correctamente.";
 }
 ?>

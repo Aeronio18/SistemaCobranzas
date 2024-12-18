@@ -4,12 +4,12 @@ include_once __DIR__ . '/../templates/header.php';
 ?>
 <div class="login-box">
     <div class="login-logo">
-        <a href="#"><b>Mi</b>Sistema</a>
+        <a href="#"><b>Sand</b>Box</a>
     </div>
     <div class="card">
         <div class="card-body login-card-body">
             <p class="login-box-msg">Iniciar sesión</p>
-            <form method="POST" action="../controllers/UserController.php">
+            <form method="POST" action="/controllers/UserController.php">
                 <div class="input-group mb-3">
                     <input type="text" name="username" class="form-control" placeholder="Username" required>
                     <div class="input-group-append">

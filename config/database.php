@@ -19,7 +19,7 @@
 }
 */
 class Database {
-    private $host = "tetsaservices";
+    private $host = "	tetsaservices.com";
     private $db_name = "u327767040_demosys";
     private $username = "u327767040_Aeronio";
     private $password = "48/!L9*iun_]TKst";
