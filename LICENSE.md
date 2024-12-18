@@ -1,2 +1,2 @@
 
-Copyright (C) 2024 Miguel Zavala
+Copyright (C) 2024 TETSA
