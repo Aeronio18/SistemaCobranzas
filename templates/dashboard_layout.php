@@ -3,22 +3,25 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-
 // Obtén el rol del usuario o asigna uno por defecto
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
+// Obtén el nombre del usuario o asigna uno genérico
+$username = isset($_SESSION['username']) ? $_SESSION['username'] : "Usuario";
 ?>
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
+    <title><?php echo $pageTitle?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/style.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../img/logo.ico" type="image/x-icon">
     <style>
         /* Estilo personalizado para el sidebar */
         #sidebarMenu {
@@ -35,26 +38,42 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
             background-color: #495057;
         }
 
-        /* Estilo personalizado para los cards */
+        /* Estilo para tarjetas AdminLTE */
         .card {
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
             margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
 
-        .card-body {
-            padding: 20px;
+        .card .card-body {
+            padding: 1.5rem;
         }
 
-        .card-title {
-            font-size: 1.2rem;
+        .card .card-title {
+            font-weight: bold;
         }
 
-        .card-text {
-            font-size: 1rem;
+        .card.text-bg-primary {
+            background-color: #0d6efd;
+            color: white;
         }
 
-        /* Mejorar la visibilidad en dispositivos pequeños */
+        .card.text-bg-success {
+            background-color: #198754;
+            color: white;
+        }
+
+        .card.text-bg-warning {
+            background-color: #ffc107;
+            color: black;
+        }
+
+        .card.text-bg-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* Ajustes para dispositivos pequeños */
         @media (max-width: 768px) {
             #sidebarMenu {
                 display: none;
@@ -126,7 +145,7 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2">Dashboard Admin</h1>
+                <h1 class="h2 text-center text-md-start">Bienvenido <?php echo htmlspecialchars($username); ?></h1>
             </div>
             <div class="container">
                 <!-- Contenido dinámico -->

@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= isset($pageTitle) ? $pageTitle : 'Sistema de Login'; ?></title>
+    <title><?= isset($pageTitle) ? $pageTitle : 'Iniciar sesion'; ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="shortcut icon" href="../img/logo.ico" type="image/x-icon">
     <style>
         body {
             background-color: #f8f9fa;
@@ -45,6 +46,20 @@
     </style>
 </head>
 <body>
+<?php
+// Definir consejos de finanzas en un arreglo.
+$financial_tips = [
+    "Ahorra al menos el 20% de tus ingresos cada mes.",
+    "Evita las deudas innecesarias y prioriza pagar las tarjetas de crédito.",
+    "Establece un fondo de emergencia para cubrir gastos inesperados.",
+    "Invierte en educación financiera para tomar mejores decisiones.",
+    "Realiza un presupuesto mensual para controlar tus gastos."
+];
+
+// Seleccionar un consejo aleatorio.
+$random_tip = $financial_tips[array_rand($financial_tips)];
+?>
+
 <section class="vh-100">
     <div class="container py-5 h-100">
         <div class="row d-flex align-items-center justify-content-center h-100">
@@ -52,6 +67,16 @@
                 <img src="../img/logo.png" class="img-fluid" alt="Imagen login">
             </div>
             <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
+                <!-- Título -->
+                <h2 class="text-center mb-4">Iniciar sesión</h2>
+
+                <!-- Consejo financiero con fondo transparente -->
+                <div class="p-3 mb-4 text-center" style="background-color: rgba(13, 110, 253, 0.1); border: 1px solid #0d6efd; border-radius: 8px;">
+                    <span style="font-style: italic; color: #495057;">
+                        <strong>Consejo financiero:</strong> <?php echo $random_tip; ?>
+                    </span>
+                </div>
+
                 <?php if (isset($_GET['error'])): ?>
                     <div class="alert alert-danger text-center">Nombre de usuario o contraseña incorrectos.</div>
                 <?php endif; ?>
