@@ -19,7 +19,7 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav d-flex align-items-center"> <!-- Aseguramos que los items se alineen en línea -->
+                <ul class="navbar-nav ms-auto"> <!-- ms-auto alinea los elementos a la derecha -->
                     <?php if (isset($_SESSION['role'])): ?>
                         <?php if ($_SESSION['role'] === 'admin'): ?>
                             <li class="nav-item">

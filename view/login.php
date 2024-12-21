@@ -6,41 +6,68 @@
     <title><?= isset($pageTitle) ? $pageTitle : 'Sistema de Login'; ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- AdminLTE CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/css/adminlte.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/style.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+
+        .divider:after,
+        .divider:before {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .form-control:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+    </style>
 </head>
-<body class="hold-transition login-page">
-    <div class="login-box">
-        <div class="card">
-            <div class="card-header text-center">
-                <h4><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h4>
+<body>
+<section class="vh-100">
+    <div class="container py-5 h-100">
+        <div class="row d-flex align-items-center justify-content-center h-100">
+            <div class="col-md-8 col-lg-7 col-xl-6">
+                <img src="../img/tetsalogo.jpg" 
+                     class="img-fluid" alt="Imagen login">
             </div>
-            <div class="card-body">
+            <div class="col-md-7 col-lg-5 col-xl-5 offset-xl-1">
                 <form action="../controllers/LoginController.php" method="POST">
-                    <div class="mb-3">
-                        <label for="username" class="form-label">Nombre de usuario</label>
-                        <input type="text" class="form-control" id="username" name="username" required>
+                    <!-- Username input -->
+                    <div class="form-outline mb-4">
+                        <input type="text" id="username" name="username" class="form-control form-control-lg" required>
+                        <label class="form-label" for="username">Nombre de usuario</label>
                     </div>
-                    <div class="mb-3">
-                        <label for="password" class="form-label">Contraseña</label>
-                        <input type="password" class="form-control" id="password" name="password" required>
+
+                    <!-- Password input -->
+                    <div class="form-outline mb-4">
+                        <input type="password" id="password" name="password" class="form-control form-control-lg" required>
+                        <label class="form-label" for="password">Contraseña</label>
                     </div>
+                    <!-- Submit button -->
                     <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Iniciar sesión</button>
+                        <button type="submit" class="btn btn-primary btn-lg">Iniciar sesión</button>
                     </div>
                 </form>
-                <p><a href="#">¿Olvidaste tu contraseña?</a></p> <!-- Link para recuperar la contraseña -->
             </div>
         </div>
     </div>
+</section>
 
-    <!-- Scripts de Bootstrap y AdminLTE -->
-    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/admin-lte@3.2/dist/js/adminlte.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
