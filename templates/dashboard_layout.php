@@ -134,12 +134,8 @@ $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
             </div>
         </main>
     </div>
-</div>
 
-<footer class="bg-dark text-white py-3 text-center">
-    <p>&copy; 2024 MiSistema. Todos los derechos reservados.</p>
-</footer>
-
+<?php require '../templates/footer.php'; ?>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
