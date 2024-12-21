@@ -1,63 +1,49 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- Server mode -->
-    <link rel="stylesheet" href="/assets/css/styles.css">
-    <!-- <link rel="stylesheet" href="/sandbox/assets/css/styles.css"> -->
-    <title>
-        <?php
-        if (session_status() == PHP_SESSION_NONE) {
-            session_start();
-        }
-        if (isset($_SESSION['username'])) {
-            echo "Bienvenido " . htmlspecialchars($_SESSION['username']) . " | ";
-            if (isset($_SESSION['role'])) {
-                switch ($_SESSION['role']) {
-                    case 'admin':
-                        echo "adminDashboard";
-                        break;
-                    case 'cobrador':
-                        echo "cobradorDashboard";
-                        break;
-                    case 'cliente':
-                        echo "clienteDashboard";
-                        break;
-                    default:
-                        echo "SandBox";
-                        break;
-                }
-            }
-        } else {
-            echo "SandBox";
-        }
-        ?>
-    </title>
+    <title><?= isset($pageTitle) ? $pageTitle : 'Sistema de Login'; ?></title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="../css/style.css" rel="stylesheet">
 </head>
-<body class="hold-transition layout-fixed">
-<div class="wrapper">
-    <?php if (!isset($hideNav) || !$hideNav): ?>
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
-            <a class="navbar-brand" href="#">SandBox</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">MiSistema</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ml-auto">
-                    <?php if (isset($_SESSION['username'])): ?>
+                <ul class="navbar-nav d-flex align-items-center"> <!-- Aseguramos que los items se alineen en línea -->
+                    <?php if (isset($_SESSION['role'])): ?>
+                        <?php if ($_SESSION['role'] === 'admin'): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../view/admin_dashboard.php">Dashboard Admin</a>
+                            </li>
+                        <?php elseif ($_SESSION['role'] === 'cobrador'): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../view/collector_dashboard.php">Dashboard Cobrador</a>
+                            </li>
+                        <?php elseif ($_SESSION['role'] === 'cliente'): ?>
+                            <li class="nav-item">
+                                <a class="nav-link" href="../view/client_dashboard.php">Dashboard Cliente</a>
+                            </li>
+                        <?php endif; ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="views/logout.php">Logout</a>
+                            <a class="nav-link text-danger" href="../controllers/LogoutController.php">Cerrar sesión</a>
                         </li>
                     <?php else: ?>
                         <li class="nav-item">
-                            <a class="nav-link" href="/login">Login</a>
+                            <a class="nav-link" href="../view/login.php">Iniciar sesión</a>
                         </li>
                     <?php endif; ?>
                 </ul>
             </div>
-        </nav>
-    <?php endif; ?>
-    <div class="content-wrapper">
+        </div>
+    </nav>
+    <div class="container mt-3">

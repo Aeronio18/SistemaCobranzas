@@ -1,24 +1,76 @@
 <?php
-class UserModel {
-    private $conn;
-    private $table_name = "usuarios";  // Asegúrate de que este nombre coincida con tu tabla en la base de datos
 
-    public $id;
-    public $username;
-    public $password;
-    public $role;
+class UserModel
+{
+    private $pdo;
 
-    public function __construct($db) {
-        $this->conn = $db;
+    public function __construct($pdo)
+    {
+        $this->pdo = $pdo;
     }
 
-    public function login() {
-        $query = "SELECT * FROM " . $this->table_name . " WHERE username = ? AND password = ?";
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->username);
-        $stmt->bindParam(2, $this->password);
-        $stmt->execute();
-        return $stmt;
+    /**
+     * Verifica si el usuario existe en la base de datos con el nombre y contraseña proporcionados.
+     */
+    public function authenticateUser($username, $password)
+    {
+        $query = "SELECT * FROM usuario WHERE nombre_usuario = :username AND password = :password";
+        $stmt = $this->pdo->prepare($query);
+        $stmt->execute([
+            'username' => $username,
+            'password' => $password,
+        ]);
+
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Obtiene todos los usuarios (usado en el CRUD para el admin).
+     */
+    public function getAllUsers()
+    {
+        $query = "SELECT id, nombre_usuario, rol FROM usuario";
+        $stmt = $this->pdo->query($query);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Crea un nuevo usuario.
+     */
+    public function createUser($username, $password, $role)
+    {
+        $query = "INSERT INTO usuario (nombre_usuario, password, rol) VALUES (:username, :password, :role)";
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute([
+            'username' => $username,
+            'password' => $password,
+            'role' => $role,
+        ]);
+    }
+
+    /**
+     * Actualiza un usuario existente.
+     */
+    public function updateUser($id, $username, $password, $role)
+    {
+        $query = "UPDATE usuario SET nombre_usuario = :username, password = :password, rol = :role WHERE id = :id";
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute([
+            'id' => $id,
+            'username' => $username,
+            'password' => $password,
+            'role' => $role,
+        ]);
+    }
+
+    /**
+     * Elimina un usuario por su ID.
+     */
+    public function deleteUser($id)
+    {
+        $query = "DELETE FROM usuario WHERE id = :id";
+        $stmt = $this->pdo->prepare($query);
+        return $stmt->execute(['id' => $id]);
     }
 }
-?>

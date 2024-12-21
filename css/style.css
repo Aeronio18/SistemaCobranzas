@@ -1,0 +1,106 @@
+/* Asegura que el body ocupe al menos el 100% de la altura de la ventana */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+/* Contenedor principal que ocupa toda la altura */
+.container-fluid {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Cuerpo del contenido */
+.main-content {
+    flex: 1;
+}
+
+/* Estilo para el footer */
+footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    background-color: #343a40;
+    color: white;
+    text-align: center;
+    padding: 10px;
+}
+
+/* Agregar reglas personalizadas si es necesario */
+.card-body {
+    padding: 20px;
+    text-align: center;
+}
+.card-title {
+    font-size: 1.2rem;
+}
+
+/* Estilos del login */
+body.login-page {
+    background: #f1f5f8; /* Fondo claro y moderno */
+    font-family: 'Arial', sans-serif; /* Establecer una fuente moderna */
+}
+
+.login-box {
+    width: 400px;
+    margin-top: 10vh;
+}
+
+.card {
+    border-radius: 10px;
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+    background: #2c3e50; /* Color oscuro para dar un toque profesional */
+    color: white;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-body {
+    padding: 30px;
+}
+
+.form-label {
+    font-size: 1.1rem;
+}
+
+.form-control {
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 10px;
+}
+
+.btn-primary {
+    background-color: #2980b9; /* Azul más profesional */
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    padding: 12px 20px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #3498db; /* Azul más brillante al pasar el mouse */
+}
+
+.login-box p {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.login-box p a {
+    text-decoration: none;
+    color: #2980b9;
+    font-weight: bold;
+}
+
+.login-box p a:hover {
+    text-decoration: underline;
+}
+
+/* Asegura que los estilos se apliquen también cuando se usa la clase de página de login */
+body.login-page .login-box {
+    margin-top: 5vh; /* Ajustar si es necesario */
+}
