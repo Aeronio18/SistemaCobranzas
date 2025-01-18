@@ -114,34 +114,57 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : "Usuario";
 
 <div class="container-fluid">
     <div class="row">
-        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar">
-            <div class="position-sticky">
-                <ul class="nav flex-column">
-                    <li class="nav-item">
-                        <a class="nav-link" href="#">
-                            <i class="fas fa-home"></i> Dashboard
-                        </a>
-                    </li>
-                    <?php if ($role === 'admin'): ?>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <i class="fas fa-users"></i> Cobradores
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <i class="fas fa-wallet"></i> Créditos
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <i class="fas fa-file-alt"></i> Solicitudes
-                            </a>
-                        </li>
-                    <?php endif; ?>
-                </ul>
-            </div>
-        </nav>
+    <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar">
+    <div class="position-sticky">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link" href="../view/<?php echo $role; ?>_dashboard.php">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </li>
+            <?php if ($role === 'admin'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/cobradores.php">
+                        <i class="fas fa-users"></i> Asesores
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/creditos.php">
+                        <i class="fas fa-wallet"></i> Créditos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/clientes.php">
+                        <i class="fas fa-file-alt"></i> Clientes
+                    </a>
+                </li>
+            <?php elseif ($role === 'cobrador'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/rutas.php">
+                        <i class="fas fa-route"></i> Rutas
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/pagos.php">
+                        <i class="fas fa-money-check-alt"></i> Pagos
+                    </a>
+                </li>
+            <?php elseif ($role === 'cliente'): ?>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/client_creditos.php">
+                        <i class="fas fa-money-bill-wave"></i> Mis Créditos
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="../view/client_historial.php">
+                        <i class="fas fa-history"></i> Historial
+                    </a>
+                </li>
+            <?php endif; ?>
+        </ul>
+    </div>
+</nav>
+
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">

@@ -6,11 +6,11 @@ $content = '
         <div class="card text-bg-primary h-100 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
                 <i class="fas fa-users fa-3x mb-4"></i>
-                <h5 class="card-title">Cobradores</h5>
-                <p class="card-text">Gestión de todos los cobradores.</p>
+                <h5 class="card-title">Asesores</h5>
+                <p class="card-text">Gestión de todos los asesores.</p>
             </div>
             <div class="card-footer bg-transparent border-0 text-center">
-                <a href="#" class="btn btn-light btn-sm">Ver más</a>
+                <a href="cobradores.php" class="btn btn-light btn-sm">Ver más</a>
             </div>
         </div>
     </div>
@@ -22,7 +22,7 @@ $content = '
                 <p class="card-text">Consulta los créditos otorgados.</p>
             </div>
             <div class="card-footer bg-transparent border-0 text-center">
-                <a href="#" class="btn btn-light btn-sm">Ver más</a>
+                <a href="creditos.php" class="btn btn-light btn-sm">Ver más</a>
             </div>
         </div>
     </div>
@@ -30,11 +30,11 @@ $content = '
         <div class="card text-bg-warning h-100 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
                 <i class="fas fa-file-alt fa-3x mb-4"></i>
-                <h5 class="card-title">Solicitudes</h5>
-                <p class="card-text">Administra las solicitudes recibidas.</p>
+                <h5 class="card-title">Clientes</h5>
+                <p class="card-text">Administra los clientes existentes.</p>
             </div>
             <div class="card-footer bg-transparent border-0 text-center">
-                <a href="#" class="btn btn-light btn-sm">Ver más</a>
+                <a href="clientes.php" class="btn btn-light btn-sm">Ver más</a>
             </div>
         </div>
     </div>
@@ -42,7 +42,7 @@ $content = '
         <div class="card text-bg-danger h-100 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
                 <i class="fas fa-tools fa-3x mb-4"></i>
-                <h5 class="card-title">CRUD</h5>
+                <h5 class="card-title">Configuracion</h5>
                 <p class="card-text">Gestiona datos del sistema.</p>
             </div>
             <div class="card-footer bg-transparent border-0 text-center">
@@ -52,11 +52,11 @@ $content = '
     </div>
     <!-- Resumen debajo de las tarjetas -->
 <div class="row mt-4">
-    <!-- Cobradores Activos -->
+    <!-- Asesores Activos -->
     <div class="col-md-4">
         <div class="card">
             <div class="card-header">
-                <h5>Cobradores Activos</h5>
+                <h5>Asesores Activos</h5>
             </div>
             <div class="card-body">
                 <table class="table table-striped">

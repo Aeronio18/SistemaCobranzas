@@ -25,10 +25,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ../view/admin_dashboard.php');
                 break;
             case 'cobrador':
-                header('Location: ../view/collector_dashboard.php');
+                header('Location: ../view/cobrador_dashboard.php');
                 break;
             case 'cliente':
-                header('Location: ../view/client_dashboard.php');
+                header('Location: ../view/cliente_dashboard.php');
                 break;
             default:
                 header('Location: ../view/login.php?error=1');
