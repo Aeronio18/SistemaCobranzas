@@ -26,23 +26,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_inicio = $_POST['fecha_inicio'] ?? '';
     $fecha_termino = $_POST['fecha_termino'] ?? '';
     $importe = $_POST['importe'] ?? '';
-    $abono = $_POST['abono'] ?? '';
 
     // Validación de campos vacíos
-    if (empty($cliente_id) || empty($fecha_inicio) || empty($fecha_termino) || empty($importe) || empty($abono)) {
+    if (empty($cliente_id) || empty($fecha_inicio) || empty($fecha_termino) || empty($importe)) {
         $error = 'Por favor, complete todos los campos.';
     } else {
         // Insertar en la base de datos
         try {
-            $sql = "INSERT INTO creditos (cliente_id, fecha_inicio, fecha_termino, importe, abono) 
-                    VALUES (:cliente_id, :fecha_inicio, :fecha_termino, :importe, :abono)";
+            $sql = "INSERT INTO creditos (cliente_id, fecha_inicio, fecha_termino, importe) 
+                    VALUES (:cliente_id, :fecha_inicio, :fecha_termino, :importe)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 ':cliente_id' => $cliente_id,
                 ':fecha_inicio' => $fecha_inicio,
                 ':fecha_termino' => $fecha_termino,
                 ':importe' => $importe,
-                ':abono' => $abono
             ]);
             $success = "Crédito registrado con éxito.";
         } catch (PDOException $e) {
@@ -107,10 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <div class="col-md-6">
                     <label for="importe" class="form-label">Importe</label>
                     <input type="number" class="form-control" id="importe" name="importe" step="0.01" required>
-                </div>
-                <div class="col-md-6">
-                    <label for="abono" class="form-label">Abono</label>
-                    <input type="number" class="form-control" id="abono" name="abono" step="0.01" required>
                 </div>
             </div>
 

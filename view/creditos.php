@@ -27,15 +27,9 @@ try {
                 <td>' . htmlspecialchars($credito['estado']) . '</td>
                 <td>$' . number_format($credito['saldo_pendiente'], 2) . '</td>
                 <td>
-                    <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Pago">
-                        <i class="fas fa-dollar-sign"></i>
-                    </a>
-                    <a href="#" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Pago con Demora">
-                        <i class="fas fa-exclamation-circle"></i>
-                    </a>
-                    <a href="#" class="btn btn-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Liquidado">
-                        <i class="fas fa-check"></i>
-                    </a>
+                    <a href="historial_pagos.php?credito_id=' . $credito['credito_id'] . '" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Historial de Pagos">
+        <i class="fas fa-history"></i>
+    </a>
                 </td>
             </tr>';
         }

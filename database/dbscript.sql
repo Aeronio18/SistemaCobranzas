@@ -38,3 +38,11 @@ CREATE TABLE IF NOT EXISTS asesores (
     estado ENUM('activo', 'inactivo') DEFAULT 'activo',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+CREATE TABLE IF NOT EXISTS pagos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    credito_id INT NOT NULL,
+    monto DECIMAL(10, 2) NOT NULL,
+    fecha_pago DATE NOT NULL,
+    metodo_pago VARCHAR(50) NOT NULL,
+    FOREIGN KEY (credito_id) REFERENCES creditos(id) ON DELETE CASCADE
+);
