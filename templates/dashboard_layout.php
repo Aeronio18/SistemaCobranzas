@@ -3,10 +3,40 @@
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
-// Obtén el rol del usuario o asigna uno por defecto
+
+// Obtén el rol del usuario directamente desde la sesión
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : null;
+
 // Obtén el nombre del usuario o asigna uno genérico
 $username = isset($_SESSION['username']) ? $_SESSION['username'] : "Usuario";
+
+// Si el rol es cobrador, buscar el nombre en la tabla de asesores
+if ($role === 'cobrador') {
+    // Extraemos el número de asesor del nombre de usuario (eliminamos la primera letra)
+    $numero_asesor = substr($username, 1); // Tomamos el número después de la primera letra
+
+    // Realizar la consulta para obtener el nombre del asesor
+    include '../database/db.php';
+    $sql = "SELECT nombre FROM asesores WHERE numero_asesor = ?";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([$numero_asesor]);
+    $asesor = $stmt->fetch();
+
+    if ($asesor) {
+        // Si encontramos el asesor, usamos su nombre
+        $nombre_asesor = $asesor['nombre'];
+    } else {
+        // Si no encontramos el asesor, usamos el nombre de usuario como respaldo
+        $nombre_asesor = $username;
+    }
+
+    // Usamos el nombre del asesor
+    $welcome_message = "Bienvenido " . htmlspecialchars(str_replace('_', ' ', $nombre_asesor));
+} else {
+    // Para roles de admin o asist, mostramos el nombre de usuario tal cual
+    $welcome_message = "Bienvenido " . htmlspecialchars(str_replace('_', ' ', $username));
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -14,7 +44,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : "Usuario";
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $pageTitle?></title>
+    <title><?php echo $pageTitle ?></title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
@@ -22,6 +52,7 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : "Usuario";
     <!-- Custom CSS -->
     <link href="../css/style.css" rel="stylesheet">
     <link rel="shortcut icon" href="../img/logo.ico" type="image/x-icon">
+    
     <style>
         /* Estilo personalizado para el sidebar */
         #sidebarMenu {
@@ -168,7 +199,8 @@ $username = isset($_SESSION['username']) ? $_SESSION['username'] : "Usuario";
 
         <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
             <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                <h1 class="h2 text-center text-md-start">Bienvenido <?php echo htmlspecialchars($username); ?></h1>
+            <h1 class="h2 text-center text-md-start"><?php echo $welcome_message; ?></h1>
+
             </div>
             <div class="container">
                 <!-- Contenido dinámico -->

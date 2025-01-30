@@ -6,40 +6,24 @@ $content = '
     <div class="container-fluid">
         <!-- Row 1: Tarjetas -->
         <div class="row">
-            <!-- Cobros Pendientes -->
-            <div class="col-lg-4 col-12">
+            <!-- Pagos -->
+            <div class="col-lg-6 col-12">
                 <div class="card card-primary h-100">
                     <div class="card-header">
-                        <h3 class="card-title">Cobros Pendientes</h3>
+                        <h3 class="card-title">Pagos</h3>
                     </div>
                     <div class="card-body text-center">
-                        <i class="fas fa-clock fa-3x mb-3"></i>
-                        <p>Consulta los cobros pendientes de realizar.</p>
+                        <i class="fas fa-money-bill-wave fa-3x mb-3"></i>
+                        <p>Consulta y gestiona los pagos realizados.</p>
                     </div>
                     <div class="card-footer text-center">
-                        <a href="#" class="btn btn-outline-primary"><i class="fas fa-eye"></i> Ver</a>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cobros Realizados -->
-            <div class="col-lg-4 col-12">
-                <div class="card card-success h-100">
-                    <div class="card-header">
-                        <h3 class="card-title">Cobros Realizados</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <i class="fas fa-check fa-3x mb-3"></i>
-                        <p>Revisa los cobros que ya han sido realizados.</p>
-                    </div>
-                    <div class="card-footer text-center">
-                        <a href="#" class="btn btn-outline-success"><i class="fas fa-eye"></i> Ver</a>
+                        <a href="pagos.php" class="btn btn-outline-primary"><i class="fas fa-eye"></i> Ver</a>
                     </div>
                 </div>
             </div>
 
             <!-- Rutas -->
-            <div class="col-lg-4 col-12">
+            <div class="col-lg-6 col-12">
                 <div class="card card-info h-100">
                     <div class="card-header">
                         <h3 class="card-title">Rutas</h3>

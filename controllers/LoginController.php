@@ -27,8 +27,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             case 'cobrador':
                 header('Location: ../view/cobrador_dashboard.php');
                 break;
-            case 'cliente':
-                header('Location: ../view/cliente_dashboard.php');
+            case 'asist':
+                header('Location: ../view/asist_dashboard.php');
                 break;
             default:
                 header('Location: ../view/login.php?error=1');

@@ -1,8 +1,73 @@
 <?php
+// Incluir la conexión a la base de datos
+include '../database/db.php';
+
+// Obtener el rol del usuario desde la sesión
+session_start();
+$role = isset($_SESSION['role']) ? $_SESSION['role'] : 'admin'; // Asignar un rol predeterminado
+
+try {
+    // Consulta para obtener los créditos con los datos del cliente
+    $query = "SELECT c.id AS credito_id, cl.nombre, c.importe, c.abono, c.saldo_pendiente, c.estado, c.fecha_inicio, c.fecha_termino
+              FROM creditos c
+              JOIN clientes cl ON c.cliente_id = cl.id";
+    $stmt = $pdo->query($query);
+
+    // Verificar si la consulta retorna resultados
+    if ($stmt->rowCount() > 0) {
+        // Inicializar el contenido de la tabla
+        $creditosRows = '';
+        while ($credito = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $creditosRows .= '
+            <tr>
+                <td>' . htmlspecialchars($credito['nombre']) . '</td>
+                <td>$' . number_format($credito['importe'], 2) . '</td>
+                <td>' . date('d/m/Y', strtotime($credito['fecha_inicio'])) . '</td>
+                <td>' . date('d/m/Y', strtotime($credito['fecha_termino'])) . '</td>
+                <td>' . htmlspecialchars($credito['estado']) . '</td>
+                <td>$' . number_format($credito['saldo_pendiente'], 2) . '</td>
+                <td>
+                    <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Pago">
+                        <i class="fas fa-dollar-sign"></i>
+                    </a>
+                    <a href="#" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Pago con Demora">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </a>
+                    <a href="#" class="btn btn-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Liquidado">
+                        <i class="fas fa-check"></i>
+                    </a>
+                </td>
+            </tr>';
+        }
+    } else {
+        $creditosRows = '<tr><td colspan="7" class="text-center">No se encontraron créditos registrados.</td></tr>';
+    }
+
+    // Consultas para los datos de las tarjetas
+    $creditosActivosQuery = "SELECT COUNT(*) AS count FROM creditos WHERE estado = 'pendiente'";
+    $creditosPendientesQuery = "SELECT COUNT(*) AS count FROM creditos WHERE fecha_termino < CURDATE() AND estado = 'pendiente'";
+    $creditosFinalizadosQuery = "SELECT COUNT(*) AS count FROM creditos WHERE estado = 'pagado'";
+
+    // Ejecutar las consultas para los totales
+    $creditosActivosStmt = $pdo->query($creditosActivosQuery);
+    $creditosPendientesStmt = $pdo->query($creditosPendientesQuery);
+    $creditosFinalizadosStmt = $pdo->query($creditosFinalizadosQuery);
+
+    $creditosActivosCount = $creditosActivosStmt->fetch(PDO::FETCH_ASSOC)['count'];
+    $creditosPendientesCount = $creditosPendientesStmt->fetch(PDO::FETCH_ASSOC)['count'];
+    $creditosFinalizadosCount = $creditosFinalizadosStmt->fetch(PDO::FETCH_ASSOC)['count'];
+
+} catch (PDOException $e) {
+    die("Error al obtener los créditos: " . $e->getMessage());
+}
+
+// El contenido de la página
 $pageTitle = "Créditos";
-$content = '
-<div class="row g-4">
-    <!-- Tarjeta para registrar un nuevo crédito -->
+$content = '<div class="row g-4">';
+
+// Si el rol no es 'asist', mostrar la tarjeta de "Nuevo Crédito"
+if ($role !== 'asist') {
+    $content .= '
     <div class="col-md-3 col-sm-6">
         <div class="card text-bg-success h-100 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
@@ -11,20 +76,21 @@ $content = '
                 <p class="card-text">Registrar un nuevo crédito.</p>
             </div>
             <div class="card-footer bg-transparent border-0 text-center">
-                <a href="#" class="btn btn-light btn-sm w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar un nuevo crédito">
+                <a href="registrar_credito.php" class="btn btn-light btn-sm w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar un nuevo crédito">
                     <i class="fas fa-plus-circle"></i>
                 </a>
             </div>
         </div>
-    </div>
+    </div>';
+}
 
-    <!-- Resumen de créditos -->
+$content .= '
     <div class="col-md-3 col-sm-6">
         <div class="card text-bg-primary h-100 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
                 <i class="fas fa-coins fa-3x mb-3"></i>
                 <h5 class="card-title">Créditos Actuales</h5>
-                <p class="card-text">10 créditos activos</p>
+                <p class="card-text">' . $creditosActivosCount . ' créditos activos</p>
             </div>
         </div>
     </div>
@@ -34,7 +100,7 @@ $content = '
             <div class="card-body text-center">
                 <i class="fas fa-hourglass-half fa-3x mb-3"></i>
                 <h5 class="card-title">Créditos Pendientes</h5>
-                <p class="card-text">5 créditos pendientes hoy</p>
+                <p class="card-text">' . $creditosPendientesCount . ' créditos pendientes hoy</p>
             </div>
         </div>
     </div>
@@ -44,13 +110,12 @@ $content = '
             <div class="card-body text-center">
                 <i class="fas fa-check-circle fa-3x mb-3"></i>
                 <h5 class="card-title">Créditos Finalizados</h5>
-                <p class="card-text">8 créditos completados</p>
+                <p class="card-text">' . $creditosFinalizadosCount . ' créditos completados</p>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Tabla de créditos -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
@@ -65,36 +130,19 @@ $content = '
                             <th>Cantidad Solicitada</th>
                             <th>Fecha Solicitada</th>
                             <th>Periodo de Pagos</th>
-                            <th>Pagos Pendientes</th>
-                            <th>Total</th>
+                            <th>Estado</th>
+                            <th>Saldo Pendiente</th>
                             <th>Opciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Cliente 1</td>
-                            <td>$500</td>
-                            <td>10/01/2025</td>
-                            <td>12 meses</td>
-                            <td>5</td>
-                            <td>$600</td>
-                            <td>
-                                <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar Pago">
-                                    <i class="fas fa-dollar-sign"></i>
-                                </a>
-                                <a href="#" class="btn btn-warning btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Pago con Demora">
-                                    <i class="fas fa-exclamation-circle"></i>
-                                </a>
-                                <a href="#" class="btn btn-success btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Liquidado">
-                                    <i class="fas fa-check"></i>
-                                </a>
-                            </td>
-                        </tr>
+                        ' . $creditosRows . '
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>';
+
 include '../templates/dashboard_layout.php';
 ?>
