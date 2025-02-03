@@ -3,6 +3,7 @@ $pageTitle = "Dashboard Admin";
 
 // Conexión a la base de datos
 require_once '../database/db.php';
+
 // Obtener el total de créditos pagados hoy
 $queryCreditosPagadosHoy = "
 SELECT COUNT(*) AS pagos_totales
@@ -13,13 +14,12 @@ WHERE c.estado = 'pagado' AND DATE(p.fecha_pago) = CURDATE()
 $resultCreditosPagadosHoy = $pdo->query($queryCreditosPagadosHoy);
 $totalCreditosPagadosHoy = $resultCreditosPagadosHoy->fetch(PDO::FETCH_ASSOC)['pagos_totales'];
 
-// Obtener el total de créditos pendientes para calcular el porcentaje
-$queryCreditosPendientes = "SELECT COUNT(*) AS total FROM creditos WHERE estado = 'pendiente'";
-$resultCreditosPendientes = $pdo->query($queryCreditosPendientes);
-$totalCreditosPendientes = $resultCreditosPendientes->fetch(PDO::FETCH_ASSOC)['total'];
+// Obtener el total de créditos (todos, no solo pendientes)
+$queryTotalCreditos = "SELECT COUNT(*) AS total FROM creditos";
+$resultTotalCreditos = $pdo->query($queryTotalCreditos);
+$totalCreditos = $resultTotalCreditos->fetch(PDO::FETCH_ASSOC)['total'];
 
 // Calcular el porcentaje de créditos pagados hoy
-$totalCreditos = $totalCreditosPagadosHoy + $totalCreditosPendientes;
 $porcentajePagadosHoy = ($totalCreditos > 0) ? ($totalCreditosPagadosHoy / $totalCreditos) * 100 : 0;
 
 // Obtener el número de asesores activos
@@ -39,7 +39,7 @@ $totalClientes = $resultClientes->fetch(PDO::FETCH_ASSOC)['total'];
 
 // Obtener los asesores con créditos por cobrar
 $queryAsesoresCreditos = "
-    SELECT a.nombre, COUNT(c.id) AS creditos_por_cobrar
+    SELECT a.nombre,a.estado, COUNT(c.id) AS creditos_por_cobrar
     FROM asesores a
     LEFT JOIN creditos c ON a.id = c.asesor_id
     WHERE c.estado = 'pendiente'
@@ -167,6 +167,9 @@ $content = '
                     </thead>
                     <tbody>';
                     while ($asesor = $resultAsesoresCreditos->fetch(PDO::FETCH_ASSOC)) {
+                        if ($asesor['estado'] !== 'activo') {
+                            continue; // Saltar al siguiente asesor si no está activo
+                        }
                         $content .= '<tr>
                             <td>' . htmlspecialchars($asesor['nombre']) . '</td>
                             <td>' . $asesor['creditos_por_cobrar'] . '</td>
