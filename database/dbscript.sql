@@ -27,6 +27,8 @@ CREATE TABLE IF NOT EXISTS creditos (
     saldo_pendiente DECIMAL(10,2) GENERATED ALWAYS AS (importe - abono) STORED,
     estado ENUM('pendiente', 'pagado', 'vencido') NOT NULL DEFAULT 'pendiente',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    ALTER TABLE creditos ADD COLUMN asesor_id INT NOT NULL AFTER cliente_id,
+    ALTER TABLE creditos ADD FOREIGN KEY (asesor_id) REFERENCES asesores(id) ON DELETE CASCADE,
     FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE
 );
 -- Crear tabla para asesores

@@ -7,10 +7,11 @@ session_start();
 $role = isset($_SESSION['role']) ? $_SESSION['role'] : 'admin'; // Asignar un rol predeterminado
 
 try {
-    // Consulta para obtener los créditos con los datos del cliente
-    $query = "SELECT c.id AS credito_id, cl.nombre, c.importe, c.abono, c.saldo_pendiente, c.estado, c.fecha_inicio, c.fecha_termino
+    // Consulta para obtener los créditos con los datos del cliente y asesor
+    $query = "SELECT c.id AS credito_id, cl.nombre AS cliente_nombre, c.importe, c.abono, c.saldo_pendiente, c.estado, c.fecha_inicio, c.fecha_termino, a.nombre AS asesor_nombre
               FROM creditos c
-              JOIN clientes cl ON c.cliente_id = cl.id";
+              JOIN clientes cl ON c.cliente_id = cl.id
+              LEFT JOIN asesores a ON c.asesor_id = a.id";  // Asegúrate de tener la tabla asesores y la columna asesor_id en la tabla creditos
     $stmt = $pdo->query($query);
 
     // Verificar si la consulta retorna resultados
@@ -20,21 +21,22 @@ try {
         while ($credito = $stmt->fetch(PDO::FETCH_ASSOC)) {
             $creditosRows .= '
             <tr>
-                <td>' . htmlspecialchars($credito['nombre']) . '</td>
+                <td>' . htmlspecialchars($credito['cliente_nombre']) . '</td>
                 <td>$' . number_format($credito['importe'], 2) . '</td>
                 <td>' . date('d/m/Y', strtotime($credito['fecha_inicio'])) . '</td>
                 <td>' . date('d/m/Y', strtotime($credito['fecha_termino'])) . '</td>
                 <td>' . htmlspecialchars($credito['estado']) . '</td>
                 <td>$' . number_format($credito['saldo_pendiente'], 2) . '</td>
+                <td>' . htmlspecialchars($credito['asesor_nombre']) . '</td> <!-- Mostrar el nombre del asesor -->
                 <td>
                     <a href="historial_pagos.php?credito_id=' . $credito['credito_id'] . '" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Historial de Pagos">
-        <i class="fas fa-history"></i>
-    </a>
+                        <i class="fas fa-history"></i>
+                    </a>
                 </td>
             </tr>';
         }
     } else {
-        $creditosRows = '<tr><td colspan="7" class="text-center">No se encontraron créditos registrados.</td></tr>';
+        $creditosRows = '<tr><td colspan="8" class="text-center">No se encontraron créditos registrados.</td></tr>';
     }
 
     // Consultas para los datos de las tarjetas
@@ -126,6 +128,7 @@ $content .= '
                             <th>Periodo de Pagos</th>
                             <th>Estado</th>
                             <th>Saldo Pendiente</th>
+                            <th>Asesor</th> <!-- Agregar columna para el asesor -->
                             <th>Opciones</th>
                         </tr>
                     </thead>

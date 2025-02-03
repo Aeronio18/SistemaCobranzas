@@ -1,60 +1,49 @@
 <?php
-$pageTitle = "Pagos";
-$content = '
-<!-- Main content -->
+session_start();
+require '../database/db.php';
+
+// Verifica si el usuario ha iniciado sesión
+if (!isset($_SESSION['username'])) {
+    header("Location: ../views/login.php");
+    exit();
+}
+
+$nombre_usuario = $_SESSION['username'];
+
+// Obtener el ID del asesor basado en el nombre de usuario
+$sqlAsesor = "SELECT id FROM asesores WHERE CONCAT(LEFT(nombre, 1), numero_asesor) = :nombre_usuario";
+$stmtAsesor = $pdo->prepare($sqlAsesor);
+$stmtAsesor->bindParam(':nombre_usuario', $nombre_usuario, PDO::PARAM_STR);
+$stmtAsesor->execute();
+$asesor = $stmtAsesor->fetch(PDO::FETCH_ASSOC);
+
+if (!$asesor) {
+    echo "<p class='text-danger'>No se encontró un asesor asociado a este usuario.</p>";
+    exit();
+}
+
+$asesor_id = $asesor['id'];
+
+// Consulta SQL para obtener los créditos asignados al asesor autenticado
+$sql = "SELECT c.id, cl.nombre AS cliente, c.importe, c.fecha_inicio, c.fecha_termino, c.estado
+        FROM creditos c
+        INNER JOIN clientes cl ON c.cliente_id = cl.id
+        WHERE c.asesor_id = :asesor_id";
+
+$stmt = $pdo->prepare($sql);
+$stmt->bindParam(':asesor_id', $asesor_id, PDO::PARAM_INT);
+$stmt->execute();
+$creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+$pageTitle = "Créditos Asignados";
+$content = ' 
 <section class="content">
     <div class="container-fluid">
-        <!-- Tarjetas Resumen -->
         <div class="row">
-            <!-- Pagos Realizados del Día -->
-            <div class="col-lg-4 col-12">
-                <div class="card card-success h-100">
-                    <div class="card-header">
-                        <h3 class="card-title">Pagos Realizados</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <i class="fas fa-check-circle fa-3x mb-3"></i>
-                        <h4>15</h4> <!-- Número de pagos realizados -->
-                        <p>Pagos realizados en el día.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Pagos Pendientes -->
-            <div class="col-lg-4 col-12">
-                <div class="card card-warning h-100">
-                    <div class="card-header">
-                        <h3 class="card-title">Pagos Pendientes</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <i class="fas fa-clock fa-3x mb-3"></i>
-                        <h4>10</h4> <!-- Número de pagos pendientes -->
-                        <p>Pagos aún pendientes de realizar.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Avance de la Ruta del Día -->
-            <div class="col-lg-4 col-12">
-                <div class="card card-info h-100">
-                    <div class="card-header">
-                        <h3 class="card-title">Avance de la Ruta</h3>
-                    </div>
-                    <div class="card-body text-center">
-                        <i class="fas fa-route fa-3x mb-3"></i>
-                        <h4>75%</h4> <!-- Porcentaje de avance -->
-                        <p>Porcentaje de avance en la ruta del día.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Listado de Pagos -->
-        <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Listado de Pagos</h5>
+                        <h5>Listado de Créditos Asignados</h5>
                     </div>
                     <div class="card-body">
                         <table class="table table-striped">
@@ -62,35 +51,46 @@ $content = '
                                 <tr>
                                     <th>Cliente</th>
                                     <th>Monto Prestado</th>
-                                    <th>Plazo</th>
-                                    <th>Fecha Último Pago</th>
+                                    <th>Fecha Inicio</th>
+                                    <th>Fecha Término</th>
+                                    <th>Estado</th>
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <!-- Ejemplo de un historial de pagos -->
-                                <tr>
-                                    <td>Cliente 1</td>
-                                    <td>$5,000</td>
-                                    <td>6 meses</td>
-                                    <td>15/01/2025</td>
-                                    <td>
-                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalHistorialPago" onclick="cargarHistorial(\'Cliente 1\')">
-                                            <i class="fas fa-eye"></i> Ver Historial
-                                        </button>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Cliente 2</td>
-                                    <td>$3,000</td>
-                                    <td>3 meses</td>
-                                    <td>10/01/2025</td>
-                                    <td>
-                                        <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalHistorialPago" onclick="cargarHistorial(\'Cliente 2\')">
-                                            <i class="fas fa-eye"></i> Ver Historial
-                                        </button>
-                                    </td>
-                                </tr>
+                            <tbody>';
+
+if (!empty($creditos)) {
+    foreach ($creditos as $credito) {
+        $estado = htmlspecialchars($credito['estado']); // Estado del crédito
+        $content .= ' 
+        <tr>
+            <td>' . htmlspecialchars($credito['cliente']) . '</td>
+            <td>$' . number_format($credito['importe'], 2) . '</td>
+            <td>' . date('d/m/Y', strtotime($credito['fecha_inicio'])) . '</td>
+            <td>' . date('d/m/Y', strtotime($credito['fecha_termino'])) . '</td>
+            <td>' . $estado . '</td>
+            <td>
+                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalHistorialPago" onclick="cargarHistorial(' . $credito['id'] . ')">
+                    <i class="fas fa-eye"></i> Ver Historial
+                </button>';
+                
+                // Mostrar el botón "Registrar Pago" solo si el estado NO es "Pagado"
+                if ($estado !== 'pagado') {
+                    $content .= '
+                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrarPago" onclick="setCreditoId(' . $credito['id'] . ')">
+                        <i class="fas fa-dollar-sign"></i> Registrar Pago
+                    </button>';
+                }
+                
+        $content .= '  
+            </td>
+        </tr>';
+    }
+} else {
+    $content .= '<tr><td colspan="6" class="text-center">No hay créditos asignados.</td></tr>';
+}
+
+$content .= ' 
                             </tbody>
                         </table>
                     </div>
@@ -117,34 +117,56 @@ $content = '
     </div>
 </div>
 
+<!-- Modal para Registrar Pago -->
+<div class="modal fade" id="modalRegistrarPago" tabindex="-1" aria-labelledby="modalRegistrarPagoLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalRegistrarPagoLabel">Registrar Pago del Crédito</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <form action="../models/procesar_pago.php" method="POST">
+                    <input type="hidden" name="credito_id" id="credito_id" value="">
+                    <div class="mb-3">
+                        <label for="monto_pago" class="form-label">Monto del Pago</label>
+                        <input type="number" class="form-control" id="monto_pago" name="monto_pago" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="fecha_pago" class="form-label">Fecha de Pago</label>
+                        <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="metodo_pago" class="form-label">Método de Pago</label>
+                        <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+                            <option value="Efectivo">Efectivo</option>
+                            <option value="Transferencia">Transferencia</option>
+                            <option value="Tarjeta">Tarjeta</option>
+                            <option value="Otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary">Registrar Pago</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
-function cargarHistorial(cliente) {
-    // Lógica para cargar el historial dinámicamente (puede conectarse al backend)
-    const historial = `
-        <p><strong>Cliente:</strong> ${cliente}</p>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Fecha de Pago</th>
-                    <th>Monto</th>
-                    <th>Estatus</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>01/01/2025</td>
-                    <td>$1,000</td>
-                    <td>Pagado</td>
-                </tr>
-                <tr>
-                    <td>15/01/2025</td>
-                    <td>$500</td>
-                    <td>Pendiente</td>
-                </tr>
-            </tbody>
-        </table>
-    `;
-    document.getElementById("contenidoHistorial").innerHTML = historial;
+function cargarHistorial(creditoId) {
+    fetch("../controllers/obtener_historial.php?credito_id=" + creditoId)
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("contenidoHistorial").innerHTML = data;
+        })
+        .catch(error => console.error("Error:", error));
+}
+
+function setCreditoId(creditoId) {
+    document.getElementById("credito_id").value = creditoId;
 }
 </script>
 ';

@@ -15,29 +15,37 @@ $error = '';
 $success = '';
 
 // Obtener la lista de clientes
-$sql = "SELECT id, nombre FROM clientes ORDER BY nombre ASC";
-$stmt = $pdo->prepare($sql);
-$stmt->execute();
-$clientes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$sqlClientes = "SELECT id, nombre FROM clientes ORDER BY nombre ASC";
+$stmtClientes = $pdo->prepare($sqlClientes);
+$stmtClientes->execute();
+$clientes = $stmtClientes->fetchAll(PDO::FETCH_ASSOC);
+
+// Obtener la lista de asesores (solo los activos)
+$sqlAsesores = "SELECT id, nombre FROM asesores WHERE estado = 'activo' ORDER BY nombre ASC";
+$stmtAsesores = $pdo->prepare($sqlAsesores);
+$stmtAsesores->execute();
+$asesores = $stmtAsesores->fetchAll(PDO::FETCH_ASSOC);
 
 // Procesar el formulario
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $cliente_id = $_POST['cliente'] ?? '';
+    $asesor_id = $_POST['asesor'] ?? '';
     $fecha_inicio = $_POST['fecha_inicio'] ?? '';
     $fecha_termino = $_POST['fecha_termino'] ?? '';
     $importe = $_POST['importe'] ?? '';
 
     // Validación de campos vacíos
-    if (empty($cliente_id) || empty($fecha_inicio) || empty($fecha_termino) || empty($importe)) {
+    if (empty($cliente_id) || empty($asesor_id) || empty($fecha_inicio) || empty($fecha_termino) || empty($importe)) {
         $error = 'Por favor, complete todos los campos.';
     } else {
         // Insertar en la base de datos
         try {
-            $sql = "INSERT INTO creditos (cliente_id, fecha_inicio, fecha_termino, importe) 
-                    VALUES (:cliente_id, :fecha_inicio, :fecha_termino, :importe)";
+            $sql = "INSERT INTO creditos (cliente_id, asesor_id, fecha_inicio, fecha_termino, importe) 
+                    VALUES (:cliente_id, :asesor_id, :fecha_inicio, :fecha_termino, :importe)";
             $stmt = $pdo->prepare($sql);
             $stmt->execute([
                 ':cliente_id' => $cliente_id,
+                ':asesor_id' => $asesor_id,
                 ':fecha_inicio' => $fecha_inicio,
                 ':fecha_termino' => $fecha_termino,
                 ':importe' => $importe,
@@ -89,7 +97,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <?php endforeach; ?>
                 </select>
             </div>
-
             <div class="row mb-3">
                 <div class="col-md-6">
                     <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
@@ -107,7 +114,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <input type="number" class="form-control" id="importe" name="importe" step="0.01" required>
                 </div>
             </div>
-
+            <!-- Asesor -->
+            <div class="mb-3">
+                <label for="asesor" class="form-label">Asesor</label>
+                <select class="form-select" id="asesor" name="asesor" required>
+                    <option value="">Selecciona un asesor</option>
+                    <?php foreach ($asesores as $asesor): ?>
+                        <option value="<?= $asesor['id'] ?>"><?= htmlspecialchars($asesor['nombre']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
             <button type="submit" class="btn btn-success w-100"><i class="fas fa-save"></i> Registrar Crédito</button>
             <a href="javascript:history.back()" class="btn btn-secondary w-100 mt-3">
                 <i class="fas fa-arrow-left"></i> Volver

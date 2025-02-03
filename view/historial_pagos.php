@@ -10,18 +10,36 @@ if (!isset($_GET['credito_id'])) {
 $credito_id = $_GET['credito_id'];
 
 try {
-    // Consulta para obtener el historial de pagos de un crédito
-    $query = "SELECT p.monto, p.fecha_pago, p.metodo_pago
+    // Consulta para obtener el historial de pagos junto con el asesor asignado
+    $query = "SELECT p.monto, p.fecha_pago, p.metodo_pago, a.nombre AS nombre_asesor
               FROM pagos p
-              WHERE p.credito_id = :credito_id";
+              JOIN creditos c ON p.credito_id = c.id
+              JOIN asesores a ON c.asesor_id = a.id
+              WHERE p.credito_id = :credito_id
+              LIMIT 1";  // Solo necesitamos un resultado para el asesor
+              
     $stmt = $pdo->prepare($query);
     $stmt->execute(['credito_id' => $credito_id]);
 
-    // Verificar si la consulta retorna resultados
+    // Verificar si hay datos
+    $asesor = "No asignado"; // Valor por defecto si no hay asesor
     if ($stmt->rowCount() > 0) {
-        // Inicializar el contenido de la tabla de pagos
-        $pagosRows = '';
-        while ($pago = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        $asesor = htmlspecialchars($row['nombre_asesor']);
+    }
+} catch (PDOException $e) {
+    die("Error al obtener la información: " . $e->getMessage());
+}
+
+// Consulta para obtener los pagos del crédito
+try {
+    $queryPagos = "SELECT monto, fecha_pago, metodo_pago FROM pagos WHERE credito_id = :credito_id";
+    $stmtPagos = $pdo->prepare($queryPagos);
+    $stmtPagos->execute(['credito_id' => $credito_id]);
+
+    $pagosRows = '';
+    if ($stmtPagos->rowCount() > 0) {
+        while ($pago = $stmtPagos->fetch(PDO::FETCH_ASSOC)) {
             $pagosRows .= '
             <tr>
                 <td>$' . number_format($pago['monto'], 2) . '</td>
@@ -51,7 +69,7 @@ $content = '
                         <tr>
                             <th>Monto</th>
                             <th>Fecha de Pago</th>
-                            <th>Metodo de Pago</th>
+                            <th>Método de Pago</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -62,12 +80,12 @@ $content = '
         </div>
     </div>
 </div>
-                 <a href="javascript:history.back()" class="btn btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Regresar
-                </a>
-                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalRegistrarPago">
-                    <i class="fas fa-dollar-sign"></i> Registrar Pago
-                </button>
+<a href="javascript:history.back()" class="btn btn-secondary">
+    <i class="fas fa-arrow-left"></i> Regresar
+</a>
+<button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#modalRegistrarPago">
+    <i class="fas fa-dollar-sign"></i> Registrar Pago
+</button>
 ';
 
 // Modal para Registrar Pago
@@ -80,7 +98,6 @@ $content .= '
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <!-- Formulario de Registro de Pago -->
                 <form action="../models/procesar_pago.php" method="POST">
                     <input type="hidden" name="credito_id" value="' . $credito_id . '">
                     <div class="mb-3">
