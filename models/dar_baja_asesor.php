@@ -18,8 +18,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$asesor_id]);
 
+        // Crear el nombre de usuario con la primera letra del nombre y el número de asesor
+        $usuario = strtolower(substr($asesor['nombre'], 0, 1)) . $asesor['numero_asesor']; // Primera letra del nombre + número de asesor
+
         // Eliminar el usuario y contraseña del asesor en la tabla 'usuario'
-        $usuario = str_replace(' ', '_', $asesor['nombre']); // Reemplaza los espacios por guiones bajos
         $sql = "DELETE FROM usuario WHERE nombre_usuario = ?";
         $stmt = $pdo->prepare($sql);
         $stmt->execute([$usuario]);
