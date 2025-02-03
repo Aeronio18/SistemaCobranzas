@@ -25,18 +25,20 @@ if (!$asesor) {
 $asesor_id = $asesor['id'];
 
 // Consulta SQL para obtener los créditos asignados al asesor autenticado
-$sql = "SELECT c.id, cl.nombre AS cliente, c.importe, c.fecha_inicio, c.fecha_termino, c.estado
-        FROM creditos c
-        INNER JOIN clientes cl ON c.cliente_id = cl.id
-        WHERE c.asesor_id = :asesor_id";
-
+$sql = "
+    SELECT c.id, cl.nombre AS cliente, c.importe, c.fecha_inicio, c.fecha_termino, c.estado
+    FROM creditos c
+    INNER JOIN clientes cl ON c.cliente_id = cl.id
+    WHERE c.asesor_id = :asesor_id
+";
 $stmt = $pdo->prepare($sql);
 $stmt->bindParam(':asesor_id', $asesor_id, PDO::PARAM_INT);
 $stmt->execute();
 $creditos = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 $pageTitle = "Créditos Asignados";
-$content = ' 
+ob_start();
+?>
 <section class="content">
     <div class="container-fluid">
         <div class="row">
@@ -57,40 +59,30 @@ $content = '
                                     <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>';
-
-if (!empty($creditos)) {
-    foreach ($creditos as $credito) {
-        $estado = htmlspecialchars($credito['estado']); // Estado del crédito
-        $content .= ' 
-        <tr>
-            <td>' . htmlspecialchars($credito['cliente']) . '</td>
-            <td>$' . number_format($credito['importe'], 2) . '</td>
-            <td>' . date('d/m/Y', strtotime($credito['fecha_inicio'])) . '</td>
-            <td>' . date('d/m/Y', strtotime($credito['fecha_termino'])) . '</td>
-            <td>' . $estado . '</td>
-            <td>
-                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalHistorialPago" onclick="cargarHistorial(' . $credito['id'] . ')">
-                    <i class="fas fa-eye"></i> Ver Historial
-                </button>';
-                
-                // Mostrar el botón "Registrar Pago" solo si el estado NO es "Pagado"
-                if ($estado !== 'pagado') {
-                    $content .= '
-                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrarPago" onclick="setCreditoId(' . $credito['id'] . ')">
-                        <i class="fas fa-dollar-sign"></i> Registrar Pago
-                    </button>';
-                }
-                
-        $content .= '  
-            </td>
-        </tr>';
-    }
-} else {
-    $content .= '<tr><td colspan="6" class="text-center">No hay créditos asignados.</td></tr>';
-}
-
-$content .= ' 
+                            <tbody>
+                                <?php if ($creditos): ?>
+                                    <?php foreach ($creditos as $credito): ?>
+                                        <tr>
+                                            <td><?= htmlspecialchars($credito['cliente']) ?></td>
+                                            <td>$<?= number_format($credito['importe'], 2) ?></td>
+                                            <td><?= date('d/m/Y', strtotime($credito['fecha_inicio'])) ?></td>
+                                            <td><?= date('d/m/Y', strtotime($credito['fecha_termino'])) ?></td>
+                                            <td><?= htmlspecialchars($credito['estado']) ?></td>
+                                            <td>
+                                                <button class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#modalHistorialPago" onclick="cargarHistorial(<?= $credito['id'] ?>)">
+                                                    <i class="fas fa-eye"></i> Ver Historial
+                                                </button>
+                                                <?php if ($credito['estado'] !== 'pagado'): ?>
+                                                    <button class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#modalRegistrarPago" onclick="setCreditoId(<?= $credito['id'] ?>)">
+                                                        <i class="fas fa-dollar-sign"></i> Registrar Pago
+                                                    </button>
+                                                <?php endif; ?>
+                                            </td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr><td colspan="6" class="text-center">No hay créditos asignados.</td></tr>
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -100,34 +92,30 @@ $content .= '
     </div>
 </section>
 
-<!-- Modal para ver historial de pagos -->
-<div class="modal fade" id="modalHistorialPago" tabindex="-1" aria-labelledby="modalHistorialPagoLabel" aria-hidden="true">
+<div class="modal fade" id="modalHistorialPago" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalHistorialPagoLabel">Historial de Pagos</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <h5 class="modal-title">Historial de Pagos</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="contenidoHistorial">
-                    <!-- Aquí se cargará el historial de pagos dinámicamente -->
-                </div>
+                <div id="contenidoHistorial"></div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Modal para Registrar Pago -->
-<div class="modal fade" id="modalRegistrarPago" tabindex="-1" aria-labelledby="modalRegistrarPagoLabel" aria-hidden="true">
+<div class="modal fade" id="modalRegistrarPago" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="modalRegistrarPagoLabel">Registrar Pago del Crédito</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                <h5 class="modal-title">Registrar Pago del Crédito</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
                 <form action="../models/procesar_pago.php" method="POST">
-                    <input type="hidden" name="credito_id" id="credito_id" value="">
+                    <input type="hidden" name="credito_id" id="credito_id">
                     <div class="mb-3">
                         <label for="monto_pago" class="form-label">Monto del Pago</label>
                         <input type="number" class="form-control" id="monto_pago" name="monto_pago" required>
@@ -159,9 +147,7 @@ $content .= '
 function cargarHistorial(creditoId) {
     fetch("../controllers/obtener_historial.php?credito_id=" + creditoId)
         .then(response => response.text())
-        .then(data => {
-            document.getElementById("contenidoHistorial").innerHTML = data;
-        })
+        .then(data => document.getElementById("contenidoHistorial").innerHTML = data)
         .catch(error => console.error("Error:", error));
 }
 
@@ -169,7 +155,8 @@ function setCreditoId(creditoId) {
     document.getElementById("credito_id").value = creditoId;
 }
 </script>
-';
 
+<?php
+$content = ob_get_clean();
 include '../templates/dashboard_layout.php';
 ?>

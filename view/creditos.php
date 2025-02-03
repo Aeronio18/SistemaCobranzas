@@ -125,7 +125,7 @@ $content .= '
                             <th>Cliente</th>
                             <th>Cantidad Solicitada</th>
                             <th>Fecha Solicitada</th>
-                            <th>Periodo de Pagos</th>
+                            <th>Fecha Vencimiento</th>
                             <th>Estado</th>
                             <th>Saldo Pendiente</th>
                             <th>Asesor</th> <!-- Agregar columna para el asesor -->

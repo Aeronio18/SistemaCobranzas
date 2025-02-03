@@ -1,37 +1,68 @@
 <?php
-$pageTitle = "Rutas";
+session_start();
+require '../database/db.php';
+
+// Verifica si el usuario ha iniciado sesión
+if (!isset($_SESSION['username'])) {
+    header("Location: ../views/login.php");
+    exit();
+}
+
+$nombre_usuario = $_SESSION['username'];
+$hoy = date('Y-m-d');
+
+// Obtener el ID del asesor basado en el nombre de usuario
+$sqlAsesor = "SELECT id FROM asesores WHERE CONCAT(LEFT(nombre, 1), numero_asesor) = :nombre_usuario";
+$stmtAsesor = $pdo->prepare($sqlAsesor);
+$stmtAsesor->bindParam(':nombre_usuario', $nombre_usuario, PDO::PARAM_STR);
+$stmtAsesor->execute();
+$asesor = $stmtAsesor->fetch(PDO::FETCH_ASSOC);
+
+if (!$asesor) {
+    echo "<p class='text-danger'>No se encontró un asesor asociado a este usuario.</p>";
+    exit();
+}
+
+$asesor_id = $asesor['id'];
+
+// Consultas combinadas para obtener los créditos pendientes y el conteo de pagos realizados hoy
+$query = "
+    SELECT c.id, cl.nombre, cl.direccion, cl.ubicacion_google_maps, c.importe, c.abono, c.estado,
+           COUNT(p.credito_id) AS pagos_realizados
+    FROM creditos c
+    JOIN clientes cl ON c.cliente_id = cl.id
+    LEFT JOIN pagos p ON c.id = p.credito_id AND DATE(p.fecha_pago) = :hoy
+    WHERE c.asesor_id = :asesor_id AND c.estado != 'pagado'
+    GROUP BY c.id, cl.nombre, cl.direccion, cl.ubicacion_google_maps, c.importe, c.abono, c.estado
+    HAVING COUNT(p.credito_id) = 0
+";
+$stmt = $pdo->prepare($query);
+$stmt->bindParam(':hoy', $hoy);
+$stmt->bindParam(':asesor_id', $asesor_id, PDO::PARAM_INT);
+$stmt->execute();
+
+// Consultar el total de créditos pagados hoy
+$queryCreditosPagadosHoy = "
+    SELECT COUNT(*) FROM pagos p
+    JOIN creditos c ON p.credito_id = c.id
+    WHERE DATE(p.fecha_pago) = :hoy AND c.asesor_id = :asesor_id
+";
+$stmtCreditosPagadosHoy = $pdo->prepare($queryCreditosPagadosHoy);
+$stmtCreditosPagadosHoy->bindParam(':hoy', $hoy);
+$stmtCreditosPagadosHoy->bindParam(':asesor_id', $asesor_id, PDO::PARAM_INT);
+$stmtCreditosPagadosHoy->execute();
+$creditosPagadosHoy = $stmtCreditosPagadosHoy->fetchColumn();
+
+// Construir el contenido
+$pageTitle = "Avance de Rutas del Día";
 $content = '
-<!-- Main content -->
 <section class="content">
     <div class="container-fluid">
-        <!-- Avance de la Ruta -->
-        <div class="row">
+        <div class="row mt-4">
             <div class="col-12">
                 <div class="card">
                     <div class="card-header">
-                        <h5>Avance de la Ruta del Día - ' . date('d/m/Y') . '</h5>
-                    </div>
-                    <div class="card-body d-flex justify-content-center align-items-center">
-                        <!-- Progress bar circular usando ProgressBar.js -->
-                        <div class="text-center" style="margin-right: 30px;">
-                            <div id="progress-circle" style="width: 100px; height: 120px;"></div>
-                        </div>
-                        <div class="ml-4">
-                            <p><strong>Total Clientes:</strong> 20</p>
-                            <p><strong>Clientes Atendidos:</strong> 15</p>
-                            <p><strong>Clientes Restantes:</strong> 5</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Resumen de las rutas -->
-        <div class="row">
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-header">
-                        <h5>Resumen de las Rutas - ' . date('d/m/Y') . '</h5>
+                        <h5>Resumen de la Ruta del Día - ' . date('d/m/Y') . '</h5>
                     </div>
                     <div class="card-body">
                         <table class="table table-striped">
@@ -39,36 +70,33 @@ $content = '
                                 <tr>
                                     <th>Cliente</th>
                                     <th>Dirección</th>
-                                    <th>Número de Contacto</th>
-                                    <th>Número de Pagos Pendientes</th>
+                                    <th>Saldo Pendiente</th>
                                     <th>Estatus</th>
-                                    <th>Acciones</th>
                                 </tr>
                             </thead>
-                            <tbody>
-                                <!-- Ejemplo de un cliente con cobro pendiente -->
-                                <tr>
-                                    <td>Cliente 1</td>
-                                    <td>Calle 123, Ciudad</td>
-                                    <td>(123) 456-7890</td>
-                                    <td>5</td>
-                                    <td><span class="badge bg-warning">Pendiente</span></td>
-                                    <td>
-                                        <a href="#" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Pago Realizado</a>
-                                    </td>
-                                </tr>
+                            <tbody>';
 
-                                <!-- Ejemplo de un cliente con cobro pagado -->
-                                <tr>
-                                    <td>Cliente 2</td>
-                                    <td>Avenida 456, Ciudad</td>
-                                    <td>(987) 654-3210</td>
-                                    <td>0</td>
-                                    <td><span class="badge bg-success">Pagado</span></td>
-                                    <td>
-                                        <!-- No aparece botón de pago realizado si ya está pagado -->
-                                    </td>
-                                </tr>
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $montoPagar = $row['importe'] - $row['abono'];
+    
+    if ($montoPagar > 0) {
+        $estadoBadge = ($row['estado'] == 'pendiente') ? 'bg-warning' : 'bg-success';
+        $estadoText = ($row['estado'] == 'pendiente') ? 'Pendiente' : 'Pagado';
+        $content .= '
+        <tr>
+            <td>' . htmlspecialchars($row['nombre']) . '</td>
+            <td>' . htmlspecialchars($row['direccion']) . '
+                <a href="' . htmlspecialchars($row['ubicacion_google_maps']) . '" class="btn btn-sm" target="_blank" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Mapa">
+                    <i class="fas fa-map-marker-alt text-info"></i>
+                </a>
+            </td>
+            <td>$' . number_format($montoPagar, 2) . '</td>
+            <td><span class="badge ' . $estadoBadge . '">' . $estadoText . '</span></td>
+        </tr>';
+    }
+}
+
+$content .= '
                             </tbody>
                         </table>
                     </div>
@@ -76,70 +104,7 @@ $content = '
             </div>
         </div>
     </div>
-</section>
-
-<!-- Estilos para la progress bar circular -->
-<style>
-.circular-chart {
-    display: block;
-    margin: 10px auto;
-    max-width: 100%;
-    max-height: 250px;
-}
-.circle-bg {
-    fill: none;
-    stroke: #eee;
-    stroke-width: 5; /* Grosor de la barra */
-}
-.circle {
-    fill: none;
-    stroke-width: 6; /* Haciendo la barra más gruesa */
-    stroke-linecap: round;
-    stroke: #4caf50;
-    animation: progress 1s ease-out forwards;
-}
-@keyframes progress {
-    from {
-        stroke-dasharray: 0 100;
-    }
-    to {
-        stroke-dasharray: 75 100; /* Cambia "75" por el porcentaje dinámico */
-    }
-}
-</style>
-';
+</section>';
 
 include '../templates/dashboard_layout.php';
 ?>
-
-<!-- Incluir ProgressBar.js desde CDN -->
-<script src="https://cdn.jsdelivr.net/npm/progressbar.js"></script>
-
-<!-- Script para ProgressBar.js -->
-<script>
-    // Crear la barra de progreso circular usando ProgressBar.js
-    var progress = new ProgressBar.Circle('#progress-circle', {
-        strokeWidth: 6,  // Barra más gruesa
-        color: '#4caf50',
-        trailColor: '#eee',
-        trailWidth: 2,
-        duration: 1400,
-        easing: 'easeInOut',
-        text: {
-            style: {
-                fontFamily: '"Helvetica Neue", Helvetica, Arial, sans-serif',
-                fontSize: '2rem',
-                fontWeight: 'bold',
-                color: '#4caf50',
-            },
-            autoStyleContainer: false,
-            position: 'center',
-            value: '75%', // Porcentaje dinámico
-        },
-        from: { color: '#eee', width: 1 },
-        to: { color: '#4caf50', width: 6 },
-    });
-
-    // Iniciar la animación con el porcentaje dinámico
-    progress.animate(0.75);  // 75% de avance
-</script>

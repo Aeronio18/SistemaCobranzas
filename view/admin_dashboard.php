@@ -39,7 +39,7 @@ $totalClientes = $resultClientes->fetch(PDO::FETCH_ASSOC)['total'];
 
 // Obtener los asesores con créditos por cobrar
 $queryAsesoresCreditos = "
-    SELECT a.nombre, COUNT(c.id) AS creditos_por_cobrar
+    SELECT a.nombre,a.estado, COUNT(c.id) AS creditos_por_cobrar
     FROM asesores a
     LEFT JOIN creditos c ON a.id = c.asesor_id
     WHERE c.estado = 'pendiente'
@@ -167,6 +167,9 @@ $content = '
                     </thead>
                     <tbody>';
                     while ($asesor = $resultAsesoresCreditos->fetch(PDO::FETCH_ASSOC)) {
+                        if ($asesor['estado'] !== 'activo') {
+                            continue; // Saltar al siguiente asesor si no está activo
+                        }
                         $content .= '<tr>
                             <td>' . htmlspecialchars($asesor['nombre']) . '</td>
                             <td>' . $asesor['creditos_por_cobrar'] . '</td>
@@ -191,7 +194,7 @@ $content .= '
                         <tr>
                             <th>Cliente</th>
                             <th>Crédito Actual</th>
-                            <th>Próximo Pago</th>
+                            <th>Fecha Limite</th>
                         </tr>
                     </thead>
                     <tbody>';
