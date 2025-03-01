@@ -51,7 +51,7 @@ if ($role === 'cobrador') {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="../css/style.css" rel="stylesheet">
-    <link rel="shortcut icon" href="../img/logo.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="../img/cimeli.ico" type="image/x-icon">
     
     <style>
         /* Estilo personalizado para el sidebar */
@@ -129,8 +129,8 @@ if ($role === 'cobrador') {
         <ul class="navbar-nav d-flex w-100 justify-content-between">
             <li class="nav-item ms-3">
                 <a class="navbar-brand d-flex align-items-center" href="">
-                    <img src="../img/logo.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
-                    <span class="ms-4">MiSistema</span>
+                    <img src="../img/cimeli.png" alt="Logo" width="30" height="30" class="d-inline-block align-top">
+                    <span class="ms-4">Cimeli y asociados</span>
                 </a>
             </li>
 
