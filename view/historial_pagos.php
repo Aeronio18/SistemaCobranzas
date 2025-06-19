@@ -31,9 +31,9 @@ try {
     die("Error al obtener la información: " . $e->getMessage());
 }
 
-// Consulta para obtener los pagos del crédito
+// Consulta para obtener los pagos del crédito con latitud y longitud
 try {
-    $queryPagos = "SELECT monto, fecha_pago, metodo_pago FROM pagos WHERE credito_id = :credito_id";
+    $queryPagos = "SELECT monto, fecha_pago, metodo_pago, latitud, longitud FROM pagos WHERE credito_id = :credito_id";
     $stmtPagos = $pdo->prepare($queryPagos);
     $stmtPagos->execute(['credito_id' => $credito_id]);
 
@@ -45,10 +45,24 @@ try {
                 <td>$' . number_format($pago['monto'], 2) . '</td>
                 <td>' . date('d/m/Y', strtotime($pago['fecha_pago'])) . '</td>
                 <td>' . htmlspecialchars($pago['metodo_pago']) . '</td>
+                <td>';
+            if (!empty($pago['latitud']) && !empty($pago['longitud'])) {
+                $lat = $pago['latitud'];
+                $lng = $pago['longitud'];
+                $urlMaps = "https://www.google.com/maps?q={$lat},{$lng}";
+                $pagosRows .= '
+                <a href="' . $urlMaps . '" target="_blank" rel="noopener noreferrer" 
+                   class="btn btn-sm btn-primary btn-maps" title="Ver ubicación en Google Maps">
+                    <i class="fas fa-map-marker-alt me-1"></i> Ver ubicación
+                </a>';
+            } else {
+                $pagosRows .= 'No disponible';
+            }
+            $pagosRows .= '</td>
             </tr>';
         }
     } else {
-        $pagosRows = '<tr><td colspan="3" class="text-center">No se han registrado pagos para este crédito.</td></tr>';
+        $pagosRows = '<tr><td colspan="4" class="text-center">No se han registrado pagos para este crédito.</td></tr>';
     }
 } catch (PDOException $e) {
     die("Error al obtener los pagos: " . $e->getMessage());
@@ -70,6 +84,7 @@ $content = '
                             <th>Monto</th>
                             <th>Fecha de Pago</th>
                             <th>Método de Pago</th>
+                            <th>Ubicación</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -98,8 +113,10 @@ $content .= '
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form action="../models/procesar_pago.php" method="POST">
+                <form id="formRegistrarPago" action="../models/procesar_pago.php" method="POST">
                     <input type="hidden" name="credito_id" value="' . $credito_id . '">
+                    <input type="hidden" id="latitud" name="latitud" value="">
+                    <input type="hidden" id="longitud" name="longitud" value="">
                     <div class="mb-3">
                         <label for="monto_pago" class="form-label">Monto del Pago</label>
                         <input type="number" class="form-control" id="monto_pago" name="monto_pago" required>
@@ -129,3 +146,49 @@ $content .= '
 
 include '../templates/dashboard_layout.php';
 ?>
+<style>
+/* Estilos para el botón de ubicación con animación */
+.btn-maps {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    font-size: 14px;
+}
+
+.btn-maps:hover {
+    background-color: #0d6efd; /* Bootstrap primary hover color */
+    color: white;
+    transform: scale(1.1) rotate(8deg);
+    box-shadow: 0 4px 8px rgba(13, 110, 253, 0.4);
+}
+</style>
+<script>
+document.getElementById('formRegistrarPago').addEventListener('submit', function(event) {
+    event.preventDefault();  // Evita el envío inmediato
+    
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            // Asignar valores a los campos ocultos
+            document.getElementById('latitud').value = position.coords.latitude;
+            document.getElementById('longitud').value = position.coords.longitude;
+            
+            // Enviar el formulario una vez obtenida la ubicación
+            event.target.submit();
+        }, function(error) {
+            // Si hay error o el usuario no da permiso, enviar igual sin ubicación
+            console.warn('No se pudo obtener la ubicación, se enviará sin ella.');
+            event.target.submit();
+        }, {
+            timeout: 10000  // Espera hasta 10 segundos para obtener ubicación
+        });
+    } else {
+        // Geolocalización no soportada, enviar sin ubicación
+        console.warn('Geolocalización no soportada por este navegador.');
+        event.target.submit();
+    }
+});
+</script>

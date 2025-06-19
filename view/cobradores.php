@@ -43,8 +43,7 @@ foreach ($asesores as $asesor) {
             <div class="card-body text-center">
                 <h5 class="card-title">' . htmlspecialchars($asesor['nombre']) . '</h5>
                 <p class="card-text">' . $estado . '</p>
-                <p><strong>Contacto:</strong> ' . htmlspecialchars($asesor['contacto']) . '</p>
-                <p><strong>Número Asesor:</strong> ' . htmlspecialchars($asesor['numero_asesor']) . '</p>';
+                <p><strong>Contacto:</strong> ' . htmlspecialchars($asesor['contacto']) . '</p>';
 
     // Si el asesor está activo y el rol no es 'asist', mostrar el botón de "Dar de baja"
     if ($asesor['estado'] == 'activo' && $role !== 'asist') {

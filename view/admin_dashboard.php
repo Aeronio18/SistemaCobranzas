@@ -97,57 +97,88 @@ while ($row = $resultCreditosCobradosPorAsesor->fetch(PDO::FETCH_ASSOC)) {
 $content = '
 <div class="row g-4">
     <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-primary h-100 d-flex flex-column justify-content-between">
+        <div class="card text-bg-primary shadow-sm border-0 h-100 rounded-3 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
-                <i class="fas fa-users fa-3x mb-4"></i>
+                <i class="fas fa-users fa-3x mb-3"></i>
                 <h5 class="card-title">Asesores</h5>
                 <p class="card-text">Gestión de todos los asesores.</p>
-                <h5>' . $totalAsesores . '</h5>
+                <h5><?= $totalAsesores ?></h5>
             </div>
-            <div class="card-footer bg-transparent border-0 text-center">
-                <a href="cobradores.php" class="btn btn-light btn-sm">Ver más</a>
+            <div class="card-footer bg-transparent border-0 text-center pb-3">
+                <a href="cobradores.php" class="btn btn-light btn-sm rounded-pill">
+                    <i class="fas fa-eye"></i> Ver más
+                </a>
             </div>
         </div>
     </div>
+
     <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-success h-100 d-flex flex-column justify-content-between">
+        <div class="card text-bg-success shadow-sm border-0 h-100 rounded-3 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
-                <i class="fas fa-wallet fa-3x mb-4"></i>
+                <i class="fas fa-wallet fa-3x mb-3"></i>
                 <h5 class="card-title">Créditos</h5>
                 <p class="card-text">Consulta los créditos otorgados.</p>
-                <h5>' . $totalCreditos . '</h5>
+                <h5><?= $totalCreditos ?></h5>
             </div>
-            <div class="card-footer bg-transparent border-0 text-center">
-                <a href="creditos.php" class="btn btn-light btn-sm">Ver más</a>
+            <div class="card-footer bg-transparent border-0 text-center pb-3">
+                <a href="creditos.php" class="btn btn-light btn-sm rounded-pill">
+                    <i class="fas fa-eye"></i> Ver más
+                </a>
             </div>
         </div>
     </div>
-   <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-warning h-100 d-flex flex-column justify-content-between">
+
+    <div class="col-md-3 col-sm-6">
+        <div class="card text-bg-warning shadow-sm border-0 h-100 rounded-3 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
-                <i class="fas fa-route fa-3x mb-4"></i>
+                <i class="fas fa-route fa-3x mb-3"></i>
                 <h5 class="card-title">Rutas</h5>
                 <p class="card-text">Avance de las rutas por asesor.</p>
-                <h5>' . number_format($porcentajePagadosHoy, 2) . '% Créditos Pagados Hoy</h5>
+                <h5><?= number_format($porcentajePagadosHoy, 2) ?>% Créditos Pagados Hoy</h5>
             </div>
-            <div class="card-footer bg-transparent border-0 text-center">
-                <a href="route.php" class="btn btn-light btn-sm">Ver más</a>
+            <div class="card-footer bg-transparent border-0 text-center pb-3">
+                <a href="route.php" class="btn btn-light btn-sm rounded-pill">
+                    <i class="fas fa-eye"></i> Ver más
+                </a>
             </div>
         </div>
     </div>
+
     <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-info h-100 d-flex flex-column justify-content-between">
+        <div class="card text-bg-info shadow-sm border-0 h-100 rounded-3 d-flex flex-column justify-content-between">
             <div class="card-body text-center">
-                <i class="fas fa-users fa-3x mb-4"></i>
+                <i class="fas fa-users fa-3x mb-3"></i>
                 <h5 class="card-title">Clientes</h5>
                 <p class="card-text">Gestiona los clientes registrados.</p>
-                <h5>' . $totalClientes . '</h5>
+                <h5><?= $totalClientes ?></h5>
             </div>
-            <div class="card-footer bg-transparent border-0 text-center">
-                <a href="clientes.php" class="btn btn-light btn-sm">Ver más</a>
+            <div class="card-footer bg-transparent border-0 text-center pb-3">
+                <a href="clientes.php" class="btn btn-light btn-sm rounded-pill">
+                    <i class="fas fa-eye"></i> Ver más
+                </a>
             </div>
         </div>
     </div>
+</div>
+
+<!-- Tarjeta Corte semanal -->
+<div class="container">
+  <div class="row justify-content-center mt-4">
+    <div class="col-md-8 col-lg-18">
+      <div class="card shadow-lg border-0 text-center rounded-3" style="background: linear-gradient(135deg, #012C66, #024a99); color: #fff;">
+        <div class="card-body">
+          <div class="mb-3">
+            <i class="fas fa-file-invoice-dollar fa-3x"></i>
+          </div>
+          <h5 class="card-title mb-2">Corte semanal</h5>
+          <p class="card-text">Accede al resumen de ingresos y pagos de la semana.</p>
+          <a href="../view/corte_semanal.php" class="btn btn-light rounded-pill">
+            <i class="fas fa-chart-line"></i> Ver corte
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- Resumen debajo de las tarjetas -->

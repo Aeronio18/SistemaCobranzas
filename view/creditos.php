@@ -1,117 +1,133 @@
 <?php
-// Incluir la conexión a la base de datos
 include '../database/db.php';
-
-// Obtener el rol del usuario desde la sesión
 session_start();
-$role = isset($_SESSION['role']) ? $_SESSION['role'] : 'admin'; // Asignar un rol predeterminado
+$role = $_SESSION['role'] ?? 'admin';
+$filtro = $_GET['filtro'] ?? '';
 
-try {
-    // Consulta para obtener los créditos con los datos del cliente y asesor
-    $query = "SELECT c.id AS credito_id, cl.nombre AS cliente_nombre, c.importe, c.abono, c.saldo_pendiente, c.estado, c.fecha_inicio, c.fecha_termino, a.nombre AS asesor_nombre
+// Consulta base
+$queryBase = "SELECT c.id AS credito_id, cl.nombre AS cliente_nombre, c.importe, c.abono, c.saldo_pendiente, c.estado, c.fecha_inicio, c.fecha_termino, a.nombre AS asesor_nombre
               FROM creditos c
               JOIN clientes cl ON c.cliente_id = cl.id
-              LEFT JOIN asesores a ON c.asesor_id = a.id";  // Asegúrate de tener la tabla asesores y la columna asesor_id en la tabla creditos
-    $stmt = $pdo->query($query);
+              LEFT JOIN asesores a ON c.asesor_id = a.id";
 
-    // Verificar si la consulta retorna resultados
-    if ($stmt->rowCount() > 0) {
-        // Inicializar el contenido de la tabla
-        $creditosRows = '';
-        while ($credito = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $creditosRows .= '
-            <tr>
-                <td>' . htmlspecialchars($credito['cliente_nombre']) . '</td>
-                <td>$' . number_format($credito['importe'], 2) . '</td>
-                <td>' . date('d/m/Y', strtotime($credito['fecha_inicio'])) . '</td>
-                <td>' . date('d/m/Y', strtotime($credito['fecha_termino'])) . '</td>
-                <td>' . htmlspecialchars($credito['estado']) . '</td>
-                <td>$' . number_format($credito['saldo_pendiente'], 2) . '</td>
-                <td>' . htmlspecialchars($credito['asesor_nombre']) . '</td> <!-- Mostrar el nombre del asesor -->
-                <td>
-                    <a href="historial_pagos.php?credito_id=' . $credito['credito_id'] . '" class="btn btn-info btn-sm" data-bs-toggle="tooltip" data-bs-placement="top" title="Ver Historial de Pagos">
-                        <i class="fas fa-history"></i>
-                    </a>
-                </td>
-            </tr>';
+// Aplicar filtro
+switch ($filtro) {
+    case 'pendiente':
+        $queryBase .= " WHERE c.estado = 'pendiente'";
+        break;
+    case 'finalizado':
+        $queryBase .= " WHERE c.estado = 'pagado'";
+        break;
+    case 'todos':
+    default:
+        // Sin filtro
+        break;
+}
+
+try {
+    $stmt = $pdo->query($queryBase);
+    $creditosRows = '';
+    $hayVencidos = false;
+
+    while ($credito = $stmt->fetch(PDO::FETCH_ASSOC)) {
+        $esVencido = ($credito['estado'] === 'pendiente' && strtotime($credito['fecha_termino']) < time());
+        $filaClase = $esVencido ? 'table-danger' : '';
+        $estadoLabel = htmlspecialchars($credito['estado']);
+
+        if ($esVencido) {
+            $estadoLabel .= ' <span class="badge bg-danger" title="Crédito vencido">Vencido</span>';
+            $hayVencidos = true;
         }
-    } else {
+
+        $creditosRows .= '
+        <tr class="' . $filaClase . '">
+            <td>' . htmlspecialchars($credito['cliente_nombre']) . '</td>
+            <td>$' . number_format($credito['importe'], 2) . '</td>
+            <td>' . date('d/m/Y', strtotime($credito['fecha_inicio'])) . '</td>
+            <td>' . date('d/m/Y', strtotime($credito['fecha_termino'])) . '</td>
+            <td>' . $estadoLabel . '</td>
+            <td>$' . number_format($credito['saldo_pendiente'], 2) . '</td>
+            <td>' . htmlspecialchars($credito['asesor_nombre']) . '</td>
+            <td>
+                <a href="historial_pagos.php?credito_id=' . $credito['credito_id'] . '" class="btn btn-info btn-sm" title="Ver Historial de Pagos">
+                    <i class="fas fa-history"></i>
+                </a>
+            </td>
+        </tr>';
+    }
+
+    if (empty($creditosRows)) {
         $creditosRows = '<tr><td colspan="8" class="text-center">No se encontraron créditos registrados.</td></tr>';
     }
 
-    // Consultas para los datos de las tarjetas
-    $creditosActivosQuery = "SELECT COUNT(*) AS count FROM creditos WHERE estado = 'pendiente'";
-    $creditosPendientesQuery = "SELECT COUNT(*) AS count FROM creditos WHERE fecha_termino < CURDATE() AND estado = 'pendiente'";
-    $creditosFinalizadosQuery = "SELECT COUNT(*) AS count FROM creditos WHERE estado = 'pagado'";
-
-    // Ejecutar las consultas para los totales
-    $creditosActivosStmt = $pdo->query($creditosActivosQuery);
-    $creditosPendientesStmt = $pdo->query($creditosPendientesQuery);
-    $creditosFinalizadosStmt = $pdo->query($creditosFinalizadosQuery);
-
-    $creditosActivosCount = $creditosActivosStmt->fetch(PDO::FETCH_ASSOC)['count'];
-    $creditosPendientesCount = $creditosPendientesStmt->fetch(PDO::FETCH_ASSOC)['count'];
-    $creditosFinalizadosCount = $creditosFinalizadosStmt->fetch(PDO::FETCH_ASSOC)['count'];
+    // Totales
+    $creditosTotalesCount = $pdo->query("SELECT COUNT(*) AS count FROM creditos")->fetch(PDO::FETCH_ASSOC)['count'];
+    $creditosPendientesCount = $pdo->query("SELECT COUNT(*) AS count FROM creditos WHERE estado = 'pendiente'")->fetch(PDO::FETCH_ASSOC)['count'];
+    $creditosFinalizadosCount = $pdo->query("SELECT COUNT(*) AS count FROM creditos WHERE estado = 'pagado'")->fetch(PDO::FETCH_ASSOC)['count'];
 
 } catch (PDOException $e) {
     die("Error al obtener los créditos: " . $e->getMessage());
 }
+?>
 
-// El contenido de la página
-$pageTitle = "Créditos";
-$content = '<div class="row g-4">';
-
-// Si el rol no es 'asist', mostrar la tarjeta de "Nuevo Crédito"
-if ($role !== 'asist') {
-    $content .= '
-    <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-success h-100 d-flex flex-column justify-content-between">
-            <div class="card-body text-center">
-                <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
-                <h5 class="card-title">Nuevo Crédito</h5>
-                <p class="card-text">Registrar un nuevo crédito.</p>
-            </div>
-            <div class="card-footer bg-transparent border-0 text-center">
-                <a href="registrar_credito.php" class="btn btn-light btn-sm w-100" data-bs-toggle="tooltip" data-bs-placement="top" title="Registrar un nuevo crédito">
-                    <i class="fas fa-plus-circle"></i>
-                </a>
+<?php ob_start(); ?>
+<div class="row g-4">
+    <?php if ($role !== 'asist'): ?>
+        <div class="col-md-3 col-sm-6">
+            <div class="card text-bg-success h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+                    <h5 class="card-title">Renovacion de creditos</h5>
+                    <p class="card-text">Renovar crédito.</p>
+                </div>
+                <div class="card-footer text-center">
+                    <a href="registrar_credito.php" class="btn btn-light btn-sm w-100">
+                        <i class="fas fa-plus-circle"></i> Registrar
+                    </a>
+                </div>
             </div>
         </div>
-    </div>';
-}
+    <?php endif; ?>
 
-$content .= '
+    <!-- Filtros -->
     <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-primary h-100 d-flex flex-column justify-content-between">
-            <div class="card-body text-center">
-                <i class="fas fa-coins fa-3x mb-3"></i>
-                <h5 class="card-title">Créditos Actuales</h5>
-                <p class="card-text">' . $creditosActivosCount . ' créditos activos</p>
+        <a href="?filtro=todos" class="text-decoration-none">
+            <div class="card text-bg-primary h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-coins fa-3x mb-3"></i>
+                    <h5 class="card-title">Todos los Créditos</h5>
+                    <p class="card-text"><?= $creditosTotalesCount ?> créditos registrados</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-warning h-100 d-flex flex-column justify-content-between">
-            <div class="card-body text-center">
-                <i class="fas fa-hourglass-half fa-3x mb-3"></i>
-                <h5 class="card-title">Créditos Pendientes</h5>
-                <p class="card-text">' . $creditosPendientesCount . ' créditos pendientes hoy</p>
+        <a href="?filtro=pendiente" class="text-decoration-none">
+            <div class="card text-bg-warning h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-hourglass-half fa-3x mb-3"></i>
+                    <h5 class="card-title">Créditos Pendientes</h5>
+                    <p class="card-text"><?= $creditosPendientesCount ?> créditos pendientes</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 
     <div class="col-md-3 col-sm-6">
-        <div class="card text-bg-secondary h-100 d-flex flex-column justify-content-between">
-            <div class="card-body text-center">
-                <i class="fas fa-check-circle fa-3x mb-3"></i>
-                <h5 class="card-title">Créditos Finalizados</h5>
-                <p class="card-text">' . $creditosFinalizadosCount . ' créditos completados</p>
+        <a href="?filtro=finalizado" class="text-decoration-none">
+            <div class="card text-bg-secondary h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle fa-3x mb-3"></i>
+                    <h5 class="card-title">Créditos Finalizados</h5>
+                    <p class="card-text"><?= $creditosFinalizadosCount ?> créditos completados</p>
+                </div>
             </div>
-        </div>
+        </a>
     </div>
 </div>
 
+<!-- Tabla de créditos -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
@@ -128,18 +144,41 @@ $content .= '
                             <th>Fecha Vencimiento</th>
                             <th>Estado</th>
                             <th>Saldo Pendiente</th>
-                            <th>Asesor</th> <!-- Agregar columna para el asesor -->
+                            <th>Asesor</th>
                             <th>Opciones</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        ' . $creditosRows . '
-                    </tbody>
+                    <tbody><?= $creditosRows ?></tbody>
                 </table>
             </div>
         </div>
     </div>
-</div>';
+</div>
 
+<?php if ($hayVencidos): ?>
+<!-- Toast de alerta -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 11">
+    <div id="vencidoToast" class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body">
+                Atención: Existen créditos vencidos.
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Cerrar"></button>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const toastEl = document.getElementById('vencidoToast');
+        const toast = new bootstrap.Toast(toastEl);
+        toast.show();
+    });
+</script>
+<?php endif; ?>
+
+<?php
+$content = ob_get_clean();
+$pageTitle = "Créditos";
 include '../templates/dashboard_layout.php';
 ?>

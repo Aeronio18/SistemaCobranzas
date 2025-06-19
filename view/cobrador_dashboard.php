@@ -6,8 +6,8 @@ $nombre_usuario = $_SESSION['username'];
 // Conexión a la base de datos
 require_once '../database/db.php';
 
-// Obtener el ID del asesor basado en el nombre de usuario
-$sqlAsesor = "SELECT id FROM asesores WHERE CONCAT(LEFT(nombre, 1), numero_asesor) = :nombre_usuario";
+// Obtener el ID del asesor basado en el nombre de usuario directamente
+$sqlAsesor = "SELECT id FROM asesores WHERE nombre_usuario = :nombre_usuario";
 $stmtAsesor = $pdo->prepare($sqlAsesor);
 $stmtAsesor->bindParam(':nombre_usuario', $nombre_usuario, PDO::PARAM_STR);
 $stmtAsesor->execute();
@@ -17,6 +17,7 @@ if (!$asesor) {
     echo "<p class='text-danger'>No se encontró un asesor asociado a este usuario.</p>";
     exit();
 }
+
 
 $asesor_id = $asesor['id'];
 // Obtener la fecha de hoy

@@ -10,19 +10,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $fecha_pago = $_POST['fecha_pago'];
     $metodo_pago = $_POST['metodo_pago'];
 
+    // Obtener latitud y longitud si vienen (si no, null)
+    $latitud = isset($_POST['latitud']) ? $_POST['latitud'] : null;
+    $longitud = isset($_POST['longitud']) ? $_POST['longitud'] : null;
+
     try {
         // Iniciar una transacción para asegurar que ambas acciones se realicen correctamente
         $pdo->beginTransaction();
 
-        // Insertar el pago en la base de datos
-        $query = "INSERT INTO pagos (credito_id, monto, fecha_pago, metodo_pago)
-                  VALUES (:credito_id, :monto, :fecha_pago, :metodo_pago)";
+        // Insertar el pago en la base de datos incluyendo latitud y longitud
+        $query = "INSERT INTO pagos (credito_id, monto, fecha_pago, metodo_pago, latitud, longitud)
+                  VALUES (:credito_id, :monto, :fecha_pago, :metodo_pago, :latitud, :longitud)";
         $stmt = $pdo->prepare($query);
         $stmt->execute([
             'credito_id' => $credito_id,
             'monto' => $monto_pago,
             'fecha_pago' => $fecha_pago,
-            'metodo_pago' => $metodo_pago
+            'metodo_pago' => $metodo_pago,
+            'latitud' => $latitud,
+            'longitud' => $longitud
         ]);
 
         // Actualizar el campo "abono" en la tabla "creditos"
@@ -47,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 'credito_id' => $credito_id
             ]);
 
-            // Si el saldo pendiente es 0, actualizar el estado a "pagado"
+            // Si el saldo pendiente es 0 o menos, actualizar el estado a "pagado"
             if ($nuevo_saldo <= 0) {
                 $query = "UPDATE creditos SET estado = 'pagado' WHERE id = :credito_id";
                 $stmt = $pdo->prepare($query);
