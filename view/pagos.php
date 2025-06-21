@@ -11,7 +11,7 @@ if (!isset($_SESSION['username'])) {
 $nombre_usuario = $_SESSION['username'];
 
 // Obtener el ID del asesor basado en el nombre de usuario
-$sqlAsesor = "SELECT id FROM asesores WHERE CONCAT(LEFT(nombre, 1), numero_asesor) = :nombre_usuario";
+$sqlAsesor = "SELECT id FROM asesores WHERE nombre_usuario = :nombre_usuario";
 $stmtAsesor = $pdo->prepare($sqlAsesor);
 $stmtAsesor->bindParam(':nombre_usuario', $nombre_usuario, PDO::PARAM_STR);
 $stmtAsesor->execute();
@@ -115,34 +115,55 @@ ob_start();
             </div>
             <div class="modal-body">
                 <form action="../models/procesar_pago.php" method="POST">
-                    <input type="hidden" name="credito_id" id="credito_id">
-                    <div class="mb-3">
-                        <label for="monto_pago" class="form-label">Monto del Pago</label>
-                        <input type="number" class="form-control" id="monto_pago" name="monto_pago" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="fecha_pago" class="form-label">Fecha de Pago</label>
-                        <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="metodo_pago" class="form-label">Método de Pago</label>
-                        <select class="form-select" id="metodo_pago" name="metodo_pago" required>
-                            <option value="Efectivo">Efectivo</option>
-                            <option value="Transferencia">Transferencia</option>
-                            <option value="Tarjeta">Tarjeta</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="submit" class="btn btn-primary">Registrar Pago</button>
-                    </div>
-                </form>
+    <input type="hidden" name="credito_id" id="credito_id">
+    <input type="hidden" id="latitud" name="latitud">
+    <input type="hidden" id="longitud" name="longitud">
+    <div class="mb-3">
+        <label for="monto_pago" class="form-label">Monto del Pago</label>
+        <input type="number" class="form-control" id="monto_pago" name="monto_pago" required>
+    </div>
+    <div class="mb-3">
+        <label for="fecha_pago" class="form-label">Fecha de Pago</label>
+        <input type="date" class="form-control" id="fecha_pago" name="fecha_pago" required>
+    </div>
+    <div class="mb-3">
+        <label for="metodo_pago" class="form-label">Método de Pago</label>
+        <select class="form-select" id="metodo_pago" name="metodo_pago" required>
+            <option value="Efectivo">Efectivo</option>
+            <option value="Transferencia">Transferencia</option>
+            <option value="Tarjeta">Tarjeta</option>
+            <option value="Otro">Otro</option>
+        </select>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Registrar Pago</button>
+    </div>
+</form>
+
             </div>
         </div>
     </div>
 </div>
+<script>
+document.querySelector('#modalRegistrarPago form').addEventListener('submit', function(event) {
+    event.preventDefault();
 
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            document.getElementById('latitud').value = position.coords.latitude;
+            document.getElementById('longitud').value = position.coords.longitude;
+            event.target.submit();
+        }, function(error) {
+            console.warn('No se pudo obtener la ubicación, se enviará sin ella.');
+            event.target.submit();
+        }, { timeout: 10000 });
+    } else {
+        console.warn('Geolocalización no soportada por este navegador.');
+        event.target.submit();
+    }
+});
+</script>
 <script>
 function cargarHistorial(creditoId) {
     fetch("../controllers/obtener_historial.php?credito_id=" + creditoId)

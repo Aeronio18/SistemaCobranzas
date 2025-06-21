@@ -40,21 +40,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $fecha_inicio = $_POST['fecha_inicio'] ?? '';
     $fecha_termino = $_POST['fecha_termino'] ?? '';
     $importe = $_POST['importe'] ?? '';
+    $es_renovacion = 1; // porque es una renovación
 
     // Validación
     if (empty($cliente_id) || empty($asesor_id) || empty($fecha_inicio) || empty($fecha_termino) || empty($importe)) {
         $error = 'Por favor, complete todos los campos.';
     } else {
-        // Insertar renovación
         try {
-            $stmt = $pdo->prepare("INSERT INTO creditos (cliente_id, asesor_id, fecha_inicio, fecha_termino, importe) 
-                                   VALUES (:cliente_id, :asesor_id, :fecha_inicio, :fecha_termino, :importe)");
+            $stmt = $pdo->prepare("INSERT INTO creditos (cliente_id, asesor_id, fecha_inicio, fecha_termino, importe, es_renovacion) 
+                                   VALUES (:cliente_id, :asesor_id, :fecha_inicio, :fecha_termino, :importe, :es_renovacion)");
             $stmt->execute([
                 ':cliente_id' => $cliente_id,
                 ':asesor_id' => $asesor_id,
                 ':fecha_inicio' => $fecha_inicio,
                 ':fecha_termino' => $fecha_termino,
                 ':importe' => $importe,
+                ':es_renovacion' => $es_renovacion,
             ]);
             $success = "Renovación de crédito registrada con éxito.";
         } catch (PDOException $e) {
@@ -62,6 +63,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>

@@ -99,6 +99,8 @@ CREATE TABLE IF NOT EXISTS creditos (
     FOREIGN KEY (cliente_id) REFERENCES clientes(id) ON DELETE CASCADE,
     FOREIGN KEY (asesor_id) REFERENCES asesores(id) ON DELETE CASCADE
 );
+ALTER TABLE creditos ADD COLUMN es_renovacion TINYINT(1) DEFAULT 0 AFTER importe;
+
 
 -- Crear tabla pagos
 CREATE TABLE IF NOT EXISTS pagos (

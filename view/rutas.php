@@ -12,7 +12,7 @@ $nombre_usuario = $_SESSION['username'];
 $hoy = date('Y-m-d');
 
 // Obtener el ID del asesor basado en el nombre de usuario
-$sqlAsesor = "SELECT id FROM asesores WHERE CONCAT(LEFT(nombre, 1), numero_asesor) = :nombre_usuario";
+$sqlAsesor = "SELECT id FROM asesores WHERE nombre_usuario = :nombre_usuario";
 $stmtAsesor = $pdo->prepare($sqlAsesor);
 $stmtAsesor->bindParam(':nombre_usuario', $nombre_usuario, PDO::PARAM_STR);
 $stmtAsesor->execute();
